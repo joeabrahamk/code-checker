@@ -1,0 +1,84 @@
+{
+  "version": "1.0.0",
+  "description": "Resume scoring policy - ground truth evaluation",
+
+  "final_score_weights": {
+    "stack_accuracy": 0.25,
+    "commit_quality": 0.30,
+    "code_quality": 0.20,
+    "project_depth": 0.15,
+    "documentation": 0.10
+  },
+
+  "stack_accuracy": {
+    "false_claim_penalty_per_stack": 15,
+    "max_penalty": 60,
+    "unknown_stack_confidence_reduction": 0.1
+  },
+
+  "confidence": {
+    "base": 0.70,
+    "confirmed_stack_bonus": 0.10,
+    "unknown_stack_penalty": 0.05,
+    "false_claim_penalty": 0.10,
+    "min": 0.30,
+    "max": 0.95
+  },
+
+  "commit_quality": {
+    "commit_count_thresholds": [
+      { "min": 1, "max": 5, "score": 40 },
+      { "min": 6, "max": 15, "score": 60 },
+      { "min": 16, "max": 50, "score": 80 },
+      { "min": 51, "max": 200, "score": 100 },
+      { "min": 201, "max": 99999, "score": 90 }
+    ],
+    "quality_multipliers": {
+      "descriptive_messages": 1.1,
+      "spread_over_time": 1.15,
+      "single_massive_commit": 0.5
+    }
+  },
+
+  "code_quality": {
+    "max_score": 100,
+    "structure_signals": {
+      "modular_folders": 25,
+      "config_files_present": 25,
+      "reasonable_file_sizes": 25,
+      "consistent_naming": 25
+    },
+    "lines_per_commit_ideal_range": [20, 150],
+    "test_file_bonus": 10,
+    "linting_config_bonus": 5
+  },
+
+  "project_depth": {
+    "max_score": 100,
+    "loc_thresholds": [
+      { "min": 0, "score": 0 },
+      { "min": 100, "score": 20 },
+      { "min": 500, "score": 40 },
+      { "min": 1000, "score": 55 },
+      { "min": 2500, "score": 70 },
+      { "min": 5000, "score": 80 }
+    ],
+    "feature_indicators": {
+      "error_handling": 10,
+      "multiple_modules": 10,
+      "data_flow_layers": 10,
+      "edge_case_handling": 10
+    }
+  },
+
+  "documentation": {
+    "max_score": 100,
+    "signals": {
+      "readme_exists": 30,
+      "setup_instructions": 20,
+      "tech_stack_documented": 15,
+      "usage_examples": 20,
+      "screenshots_or_diagrams": 15
+    }
+  }
+}
