@@ -82,6 +82,70 @@
     }
   },
 
+  "skill_knowledge_assessment": {
+    "description": "Per-stack skill level (0-100). Reflects understanding & implementation depth, stored separately from Stack Accuracy.",
+    "enabled": true,
+    "knowledge_indicators": {
+      "advanced_patterns": 20,
+      "error_handling_patterns": 15,
+      "state_management": 15,
+      "api_integration": 15,
+      "testing_coverage": 10,
+      "performance_optimization": 10,
+      "security_practices": 5
+    },
+    "knowledge_thresholds": {
+      "expert": { "min": 85, "description": "Deep mastery with best practices" },
+      "advanced": { "min": 70, "description": "Strong understanding & proper usage" },
+      "intermediate": { "min": 50, "description": "Functional knowledge, basic patterns" },
+      "beginner": { "min": 30, "description": "Basic usage, minimal patterns" },
+      "novice": { "min": 0, "description": "Claimed but not evidenced" }
+    },
+    "language_specific_signals": {
+      "javascript": {
+        "async_await": 15,
+        "modern_es6_syntax": 10,
+        "closures_and_scope": 10,
+        "event_handling": 5,
+        "dom_manipulation": 5
+      },
+      "python": {
+        "list_comprehensions": 10,
+        "decorators": 15,
+        "exception_handling": 10,
+        "context_managers": 10,
+        "generators": 5
+      },
+      "react": {
+        "hooks_usage": 20,
+        "state_management": 15,
+        "component_optimization": 10,
+        "error_boundaries": 10,
+        "custom_hooks": 5
+      },
+      "java": {
+        "oop_principles": 15,
+        "generics": 10,
+        "exception_handling": 10,
+        "design_patterns": 10,
+        "streams_api": 5
+      },
+      "sql": {
+        "joins_and_aggregates": 15,
+        "query_optimization": 15,
+        "transactions": 10,
+        "indexing": 5,
+        "normalization": 5
+      },
+      "docker": {
+        "multi_stage_builds": 15,
+        "volume_management": 10,
+        "networking": 10,
+        "security": 5
+      }
+    }
+  },
+
   "graphcodebert": {
     "enabled": true,
     "max_files": 5,
