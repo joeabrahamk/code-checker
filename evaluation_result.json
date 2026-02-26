@@ -1,0 +1,194 @@
+{
+  "evaluation_summary": {
+    "final_score": 83.25,
+    "confidence": 0.9,
+    "scores": {
+      "stack_accuracy": 85,
+      "commit_quality": 80,
+      "code_quality": 100,
+      "project_depth": 100,
+      "documentation": 30
+    }
+  },
+  "stack_analysis": {
+    "claimed": [
+      "Java",
+      "JavaScript",
+      "React",
+      "Python"
+    ],
+    "confirmed": [
+      "react",
+      "python",
+      "javascript"
+    ],
+    "false_claims": [
+      "java"
+    ],
+    "unknown": []
+  },
+  "repo_evidence": {
+    "languages": {
+      "JavaScript": 29183,
+      "Python": 18011,
+      "CSS": 954,
+      "HTML": 304
+    },
+    "commits": 31,
+    "lines_added": 5338,
+    "lines_deleted": 709,
+    "files_touched": 45,
+    "avg_lines_per_commit": 172.2,
+    "avg_files_per_commit": 1.5,
+    "modular_structure": true,
+    "config_files": true,
+    "error_handling": true,
+    "readme_exists": true
+  },
+  "detected_stacks": [
+    "React",
+    "Node.js",
+    "Python"
+  ],
+  "graphcodebert": {
+    "scores": {
+      "java": {
+        "similarity": 0.6399,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      },
+      "javascript": {
+        "similarity": 0.6476,
+        "best_file": "frontend\\index.html"
+      },
+      "react": {
+        "similarity": 0.6349,
+        "best_file": "frontend\\src\\main.jsx"
+      },
+      "python": {
+        "similarity": 0.6413,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      }
+    },
+    "error": null
+  },
+  "skill_assessment": [
+    {
+      "stack": "Java",
+      "knows": false,
+      "score": 25.6,
+      "remark": "Weak evidence for this claim",
+      "evidence": {
+        "confirmed": false,
+        "graphcodebert_similarity": 0.6399,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      }
+    },
+    {
+      "stack": "JavaScript",
+      "knows": true,
+      "score": 85.9,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6476,
+        "best_file": "frontend\\index.html"
+      }
+    },
+    {
+      "stack": "React",
+      "knows": true,
+      "score": 85.4,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6349,
+        "best_file": "frontend\\src\\main.jsx"
+      }
+    },
+    {
+      "stack": "Python",
+      "knows": true,
+      "score": 85.7,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6413,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      }
+    }
+  ],
+  "multi_repo_summary": [
+    {
+      "repo_url": "https://github.com/joeabrahamk/frequency_labs.git",
+      "local_path": "./temp_repo\\frequency_labs",
+      "final_score": 83.25,
+      "confidence": 0.9,
+      "scores": {
+        "stack_accuracy": 85,
+        "commit_quality": 80,
+        "code_quality": 100,
+        "project_depth": 100,
+        "documentation": 30
+      },
+      "confirmed_stacks": [
+        "react",
+        "python",
+        "javascript"
+      ],
+      "false_claims": [
+        "java"
+      ]
+    }
+  ],
+  "combined_skill_assessment": [
+    {
+      "stack": "Java",
+      "knows": false,
+      "score": 25.6,
+      "remark": "Weak evidence for this claim",
+      "evidence": {
+        "confirmed": false,
+        "graphcodebert_similarity": 0.6399,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      }
+    },
+    {
+      "stack": "JavaScript",
+      "knows": true,
+      "score": 85.9,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6476,
+        "best_file": "frontend\\index.html"
+      }
+    },
+    {
+      "stack": "React",
+      "knows": true,
+      "score": 85.4,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6349,
+        "best_file": "frontend\\src\\main.jsx"
+      }
+    },
+    {
+      "stack": "Python",
+      "knows": true,
+      "score": 85.7,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6413,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      }
+    }
+  ],
+  "resume_evidence": {
+    "path": "",
+    "extracted_claims": [],
+    "extracted_repos": []
+  }
+}

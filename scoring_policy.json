@@ -80,5 +80,21 @@
       "usage_examples": 20,
       "screenshots_or_diagrams": 15
     }
+  },
+
+  "graphcodebert": {
+    "enabled": true,
+    "max_files": 5,
+    "max_chars_per_file": 2000,
+    "skill_score": {
+      "confirmed_weight": 0.6,
+      "similarity_weight": 0.4,
+      "knows_threshold": 55,
+      "remarks": {
+        "strong": 80,
+        "moderate": 60,
+        "weak": 40
+      }
+    }
   }
 }

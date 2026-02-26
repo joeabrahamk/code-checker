@@ -46,6 +46,26 @@ STACK_SIGNATURES = {
     "PostgreSQL": ["psycopg2", "postgres"]
 }
 
+# Code file extensions for sampling
+CODE_EXTENSIONS = {
+    ".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".cs", ".go",
+    ".rb", ".php", ".rs", ".swift", ".kt", ".html", ".css"
+}
+
+# Resume parsing aliases (normalization)
+RESUME_ALIASES = {
+    "node js": "node.js",
+    "nodejs": "node.js",
+    "reactjs": "react",
+    "nextjs": "next.js",
+    "postgres": "postgresql",
+    "js": "javascript",
+    "ts": "typescript",
+    "c sharp": "c#",
+    "csharp": "c#",
+    "golang": "go"
+}
+
 # =============================================================================
 # STACK TAXONOMY - Not ML. This is ontology. Machines need categories.
 # =============================================================================
@@ -225,6 +245,92 @@ def get_stack_category(stack_name):
         if stack_lower in stacks:
             return category
     return None
+
+
+def canonical_stack_name(stack_name):
+    """Map stack aliases to canonical display names."""
+    if not stack_name:
+        return stack_name
+    lower = stack_name.strip().lower()
+    lower = RESUME_ALIASES.get(lower, lower)
+    for category, stacks in STACK_CATEGORIES.items():
+        if lower in stacks:
+            return stacks[lower]
+    return stack_name.strip()
+
+
+def extract_resume_text(resume_path):
+    """Extract text from a resume file (PDF or text)."""
+    if not resume_path:
+        return ""
+    if not os.path.exists(resume_path):
+        print(f"Warning: resume not found at {resume_path}")
+        return ""
+
+    ext = os.path.splitext(resume_path)[1].lower()
+    if ext == ".pdf":
+        try:
+            from pdfminer.high_level import extract_text  # type: ignore
+            return extract_text(resume_path) or ""
+        except Exception as exc:
+            print(f"Warning: PDF parse failed ({exc}). Falling back to manual input.")
+            return ""
+
+    try:
+        with open(resume_path, "r", encoding="utf-8", errors="ignore") as file:
+            return file.read()
+    except Exception as exc:
+        print(f"Warning: resume read failed ({exc}).")
+        return ""
+
+
+def extract_claimed_stacks_from_resume(resume_text):
+    """Extract claimed stacks from resume text via keyword matching."""
+    if not resume_text:
+        return []
+
+    text = resume_text.lower()
+    found = set()
+
+    for category, stacks in STACK_CATEGORIES.items():
+        for key, display in stacks.items():
+            if key in text or display.lower() in text:
+                found.add(display)
+
+    for alias, target in RESUME_ALIASES.items():
+        if alias in text:
+            found.add(canonical_stack_name(target))
+
+    return sorted(found)
+
+
+def extract_github_urls_from_text(text):
+    """Extract GitHub repository URLs from text."""
+    if not text:
+        return []
+    urls = re.findall(r"https?://github\.com/[\w\-\.]+/[\w\-\.]+", text)
+    return sorted(set(urls))
+
+
+def build_stack_queries(claimed_stacks):
+    """Build natural language queries for GraphCodeBERT similarity scoring."""
+    queries = {}
+    for raw in claimed_stacks:
+        lower = raw.strip().lower()
+        lower = RESUME_ALIASES.get(lower, lower)
+
+        if lower in ["react", "next.js", "next", "vue", "angular", "svelte"]:
+            queries[lower] = f"{canonical_stack_name(lower)} component using UI framework patterns and components"
+        elif lower in ["node.js", "node", "express", "nestjs"]:
+            queries[lower] = "Node.js server code using modules, APIs, and backend routing"
+        elif lower in ["python", "java", "javascript", "typescript", "go", "rust", "php", "ruby", "c#", "swift", "kotlin"]:
+            queries[lower] = f"{canonical_stack_name(lower)} source code with functions, classes, and program logic"
+        elif lower in ["postgresql", "mongodb", "mysql"]:
+            queries[lower] = f"{canonical_stack_name(lower)} database integration or query code"
+        else:
+            queries[lower] = f"{canonical_stack_name(lower)} related code implementation"
+
+    return queries
 
 
 # 
@@ -670,6 +776,61 @@ def compute_final_score(scores, weights):
     return round(total, 2)
 
 
+def compute_skill_assessment(claimed_stacks, stack_result, graphcodebert_scores, policy):
+    """Assess claimed stacks with a score and short remark."""
+    if not claimed_stacks:
+        return []
+
+    gcb_policy = policy.get("graphcodebert", {})
+    score_policy = gcb_policy.get("skill_score", {})
+    confirmed_weight = score_policy.get("confirmed_weight", 0.6)
+    similarity_weight = score_policy.get("similarity_weight", 0.4)
+    knows_threshold = score_policy.get("knows_threshold", 55)
+
+    remark_thresholds = score_policy.get("remarks", {})
+    strong = remark_thresholds.get("strong", 80)
+    moderate = remark_thresholds.get("moderate", 60)
+    weak = remark_thresholds.get("weak", 40)
+
+    confirmed_set = {c.lower() for c in stack_result.get("confirmed", [])}
+    results = []
+
+    for raw in claimed_stacks:
+        lower = RESUME_ALIASES.get(raw.lower(), raw.lower())
+        display = canonical_stack_name(lower)
+        confirmed = lower in confirmed_set
+        gcb = graphcodebert_scores.get(lower, {}) if graphcodebert_scores else {}
+        similarity = gcb.get("similarity", 0.0)
+
+        score = (confirmed_weight * (100 if confirmed else 0)) + (similarity_weight * similarity * 100)
+        score = max(0, min(100, round(score, 1)))
+
+        if score >= strong:
+            remark = "Strong evidence in code"
+        elif score >= moderate:
+            remark = "Moderate evidence; likely proficient"
+        elif score >= weak:
+            remark = "Some evidence, but limited depth"
+        else:
+            remark = "Weak evidence for this claim"
+
+        knows = score >= knows_threshold
+
+        results.append({
+            "stack": display,
+            "knows": knows,
+            "score": score,
+            "remark": remark,
+            "evidence": {
+                "confirmed": confirmed,
+                "graphcodebert_similarity": similarity,
+                "best_file": gcb.get("best_file")
+            }
+        })
+
+    return results
+
+
 # =============================================================================
 # REPO ANALYSIS FUNCTIONS
 # =============================================================================
@@ -679,11 +840,45 @@ def is_ignored(file_path):
     return any(ignored in file_path for ignored in IGNORED_PATHS)
 
 
-def clone_repo(repo_url, local_path):
-    """Clone a repo locally to get full commit history."""
-    if not os.path.exists(local_path):
-        Repo.clone_from(repo_url, local_path)
-    return Repo(local_path)
+def clone_repo(repo_url, local_path, max_retries=3):
+    """Clone a repo locally with retry logic for network failures."""
+    if os.path.exists(local_path):
+        try:
+            return Repo(local_path)
+        except Exception as exc:
+            print(f"  Warning: Existing repo at {local_path} is corrupted ({exc}). Retrying clone...")
+            import shutil
+            shutil.rmtree(local_path, ignore_errors=True)
+
+    for attempt in range(max_retries):
+        try:
+            print(f"  Cloning {repo_url}... (attempt {attempt + 1}/{max_retries})")
+            Repo.clone_from(repo_url, local_path)
+            return Repo(local_path)
+        except Exception as exc:
+            if "Connection was reset" in str(exc) or "RPC failed" in str(exc):
+                if attempt < max_retries - 1:
+                    print(f"  ⚠️  Network error. Retrying in 3 seconds...")
+                    import time
+                    time.sleep(3)
+                    continue
+                else:
+                    raise RuntimeError(
+                        f"Failed to clone {repo_url} after {max_retries} attempts (network issue). "
+                        f"Try again later or clone manually to {local_path}."
+                    )
+            else:
+                raise RuntimeError(f"Failed to clone {repo_url}: {exc}")
+
+    raise RuntimeError(f"Unexpected: Failed to clone {repo_url}")
+
+
+def open_local_repo(local_path):
+    """Open an existing local repository if possible."""
+    try:
+        return Repo(local_path)
+    except Exception:
+        return None
 
 
 def get_user_commits(repo, github_username, known_emails=None):
@@ -769,11 +964,172 @@ def detect_stacks(repo_path):
     return list(detected)
 
 
-def get_repo_languages(repo_owner, repo_name):
-    """Detect languages at repo level - honest detection."""
+def sample_code_files(repo_path, max_files=5, max_chars=2000):
+    """Select representative code files for GraphCodeBERT scoring."""
+    candidates = []
+
+    priority_patterns = [
+        "app.", "main.", "index.", "server.", "client.",
+        "/components/", "/services/", "/api/", "/utils/",
+        "/pages/", "/routes/", "/controllers/", "/models/"
+    ]
+
+    for root, _, files in os.walk(repo_path):
+        if is_ignored(root):
+            continue
+
+        for filename in files:
+            ext = os.path.splitext(filename)[1].lower()
+            if ext not in CODE_EXTENSIONS:
+                continue
+            if filename.lower() in CONFIG_FILES:
+                continue
+
+            filepath = os.path.join(root, filename)
+            try:
+                with open(filepath, "r", errors="ignore") as f:
+                    content = f.read()
+            except Exception:
+                continue
+
+            lines = content.count("\n") + 1
+            if lines < 10:
+                continue
+
+            rel_path = filepath.replace(repo_path, "").lower()
+            priority = 0
+            for pattern in priority_patterns:
+                if pattern in rel_path:
+                    priority += 10
+
+            if 50 <= lines <= 200:
+                priority += 5
+
+            candidates.append({
+                "path": rel_path.lstrip("/\\"),
+                "content": content[:max_chars],
+                "lines": lines,
+                "priority": priority
+            })
+
+    candidates.sort(key=lambda x: (x["priority"], x["lines"]), reverse=True)
+    return candidates[:max_files]
+
+
+def compute_graphcodebert_scores(repo_path, claimed_stacks, policy):
+    """Compute GraphCodeBERT similarity scores for claimed stacks."""
+    gcb_policy = policy.get("graphcodebert", {})
+    if not gcb_policy.get("enabled", True):
+        return {}, "GraphCodeBERT disabled by policy"
+
+    max_files = gcb_policy.get("max_files", 5)
+    max_chars = gcb_policy.get("max_chars_per_file", 2000)
+
+    samples = sample_code_files(repo_path, max_files=max_files, max_chars=max_chars)
+    if not samples:
+        return {}, "No suitable code samples for GraphCodeBERT"
+
+    stack_queries = build_stack_queries(claimed_stacks)
+    if not stack_queries:
+        return {}, "No stack queries for GraphCodeBERT"
+
+    try:
+        from graphcodebert_scoring import score_stacks_with_graphcodebert
+        scores, error = score_stacks_with_graphcodebert(samples, stack_queries)
+        if error:
+            return {}, error
+        return scores, None
+    except Exception as exc:
+        return {}, f"GraphCodeBERT import failed: {exc}"
+
+
+def get_repo_languages(repo_owner, repo_name, max_retries=3):
+    """Detect languages at repo level - honest detection.
+    
+    Includes retry logic for network issues.
+    Falls back to empty dict if API fails.
+    """
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/languages"
-    response = requests.get(url)
-    return response.json()
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                return response.json()
+            elif response.status_code == 403:
+                print("  Warning: GitHub API rate limit reached. Using local detection only.")
+                return {}
+            elif response.status_code == 404:
+                print(f"  Warning: Repository not found on GitHub API.")
+                return {}
+            else:
+                print(f"  Warning: GitHub API returned status {response.status_code}")
+                return {}
+        except requests.exceptions.ConnectionError as e:
+            if attempt < max_retries - 1:
+                print(f"  Connection error, retrying ({attempt + 1}/{max_retries})...")
+                import time
+                time.sleep(2)  # Wait before retry
+            else:
+                print("  Warning: Could not connect to GitHub API. Using local detection only.")
+                return {}
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                print(f"  Timeout, retrying ({attempt + 1}/{max_retries})...")
+            else:
+                print("  Warning: GitHub API timeout. Using local detection only.")
+                return {}
+        except Exception as e:
+            print(f"  Warning: GitHub API error: {e}")
+            return {}
+    
+    return {}
+
+
+def detect_languages_locally(repo_path):
+    """Fallback: Detect languages from file extensions when API fails."""
+    extension_to_language = {
+        ".py": "Python",
+        ".js": "JavaScript",
+        ".jsx": "JavaScript",
+        ".ts": "TypeScript",
+        ".tsx": "TypeScript",
+        ".html": "HTML",
+        ".htm": "HTML",
+        ".css": "CSS",
+        ".scss": "SCSS",
+        ".sass": "SASS",
+        ".json": "JSON",
+        ".java": "Java",
+        ".c": "C",
+        ".cpp": "C++",
+        ".h": "C",
+        ".cs": "C#",
+        ".go": "Go",
+        ".rb": "Ruby",
+        ".php": "PHP",
+        ".swift": "Swift",
+        ".kt": "Kotlin",
+        ".rs": "Rust",
+        ".md": "Markdown"
+    }
+    
+    language_bytes = {}
+    
+    for root, _, files in os.walk(repo_path):
+        if is_ignored(root):
+            continue
+        for f in files:
+            ext = os.path.splitext(f)[1].lower()
+            if ext in extension_to_language:
+                lang = extension_to_language[ext]
+                try:
+                    file_size = os.path.getsize(os.path.join(root, f))
+                    language_bytes[lang] = language_bytes.get(lang, 0) + file_size
+                except:
+                    pass
+    
+    return language_bytes
 
 
 def parse_repo_url(repo_url):
@@ -785,79 +1141,87 @@ def parse_repo_url(repo_url):
     return repo_owner, repo_name
 
 
-if __name__ == "__main__":
-    repo_url = input("Repo URL: ")
-    github_username = input("GitHub Username: ")
-    claimed_stacks_input = input("Claimed stacks (comma-separated, or leave empty): ")
-    claimed_stacks = [s.strip() for s in claimed_stacks_input.split(",") if s.strip()]
+def evaluate_repo(repo_url, local_path, github_username, claimed_stacks, policy):
+    """Evaluate a repo and return evaluation payload + skill assessment."""
+    repo = None
+    try:
+        if repo_url:
+            repo = clone_repo(repo_url, local_path)
+        else:
+            repo = open_local_repo(local_path)
+    except RuntimeError as exc:
+        print(f"\n❌ Clone failed: {exc}")
+        print(f"   Would you like to:")
+        print(f"   1. Try again manually: git clone {repo_url} {local_path}")
+        print(f"   2. Use an existing local repo at {local_path}")
+        skip = input("\nSkip this repo and continue? (y/n): ").lower() == "y"
+        if not skip:
+            raise
+        repo = open_local_repo(local_path)
+        if repo is None:
+            print(f"   No local repo found at {local_path}. Skipping...")
+            return None
 
-    # Load policy
-    policy = load_policy()
-    print(f"\nPolicy version: {policy['version']}")
+    if repo is None:
+        contribution = {
+            "files_touched": [],
+            "lines_added": 0,
+            "lines_deleted": 0,
+            "commit_count": 0
+        }
+        normalized = {
+            "avg_lines_per_commit": 0,
+            "avg_files_per_commit": 0
+        }
+    else:
+        commits = get_user_commits(repo, github_username)
+        contribution = analyze_user_contributions(commits)
+        normalized = normalize_contribution(contribution)
 
-    local_path = "./temp_repo"
-    repo = clone_repo(repo_url, local_path)
+    # Language detection
+    languages = {}
+    if repo_url:
+        try:
+            repo_owner, repo_name = parse_repo_url(repo_url)
+            print("\nFetching language stats...")
+            languages = get_repo_languages(repo_owner, repo_name)
+        except Exception:
+            pass
 
-    commits = get_user_commits(repo, github_username)
-    contribution = analyze_user_contributions(commits)
-    normalized = normalize_contribution(contribution)
-
-    # Get languages
-    repo_owner, repo_name = parse_repo_url(repo_url)
-    languages = get_repo_languages(repo_owner, repo_name)
+    if not languages:
+        print("  Using local file extension detection...")
+        languages = detect_languages_locally(local_path)
 
     # Detect stacks
     stacks = detect_stacks(local_path)
 
-    print("\nUser Contribution Summary")
-    print("-------------------------")
-    print("Commits:", contribution["commit_count"])
-    print("Files touched:", len(contribution["files_touched"]))
-    print("Lines added:", contribution["lines_added"])
-    print("Lines deleted:", contribution["lines_deleted"])
-    print("Avg lines/commit:", normalized["avg_lines_per_commit"])
-    print("Avg files/commit:", normalized["avg_files_per_commit"])
-    
-    print("\nDetected stacks:")
-    for stack in sorted(stacks):
-        print(f"- {stack}")
-    
-    print("\nRepo Languages:")
-    for lang, bytes_count in languages.items():
-        print(f"- {lang}: {bytes_count} bytes")
-
-    # ==========================================================================
-    # SCORING
-    # ==========================================================================
-    
     # Stack Accuracy Score (v2 - with proper taxonomy)
     stack_result = compute_stack_accuracy_v2(
         claimed_stacks, stacks, languages, local_path, policy
     )
-    
+
     # Compute confidence based on stack evidence
     confidence = compute_confidence(stack_result, policy)
-    
+
     # Commit Quality Score
     commit_data = {
         "commit_count": contribution["commit_count"],
         "avg_lines_per_commit": normalized["avg_lines_per_commit"],
-        "descriptive_messages": False,  # TODO: analyze later
-        "spread_over_time": False,       # TODO: analyze later
-        "single_massive_commit": False   # TODO: analyze later
+        "descriptive_messages": False,
+        "spread_over_time": False,
+        "single_massive_commit": False
     }
     commit_quality_score = compute_commit_quality(commit_data, policy)
-    
+
     # Code Quality Score - structural hygiene
     code_quality_score = compute_code_quality(local_path, policy)
-    
+
     # Project Depth Score - non-trivial effort
     project_depth_score = compute_project_depth(local_path, contribution, policy)
-    
+
     # Documentation Score - communication intent
     documentation_score = compute_documentation(local_path, claimed_stacks, policy)
-    
-    # Collect all scores
+
     scores = {
         "stack_accuracy": stack_result["score"],
         "commit_quality": commit_quality_score,
@@ -865,35 +1229,191 @@ if __name__ == "__main__":
         "project_depth": project_depth_score,
         "documentation": documentation_score
     }
-    
-    # Compute final score
+
     final_score = compute_final_score(scores, policy["final_score_weights"])
-    
-    # Print score breakdown
-    print("\n" + "=" * 40)
-    print("Score Breakdown")
-    print("-" * 40)
-    print(f"Stack Accuracy: {scores['stack_accuracy']}")
-    if stack_result["confirmed"]:
-        print(f"  ✓ Confirmed: {', '.join(stack_result['confirmed'])}")
-    if stack_result["false_claims"]:
-        print(f"  ✗ False claims: {', '.join(stack_result['false_claims'])}")
-    if stack_result["unknown"]:
-        print(f"  ? Unknown: {', '.join(stack_result['unknown'])}")
-    print(f"Commit Quality: {scores['commit_quality']}")
-    print(f"Code Quality: {scores['code_quality']}")
-    print(f"Project Depth: {scores['project_depth']}")
-    print(f"Documentation: {scores['documentation']}")
-    print("-" * 40)
-    print(f"Final Score: {final_score}")
-    print(f"Confidence: {confidence}")
-    
-    # Human-readable confidence interpretation
-    if confidence >= 0.80:
-        conf_text = "High - Strong evidence for claimed technologies"
-    elif confidence >= 0.60:
-        conf_text = "Medium - Some claims could not be conclusively verified"
+
+    # GraphCodeBERT scoring + skill assessment
+    gcb_scores, gcb_error = compute_graphcodebert_scores(local_path, claimed_stacks, policy)
+    skill_assessment = compute_skill_assessment(claimed_stacks, stack_result, gcb_scores, policy)
+
+    evaluation_payload = {
+        "evaluation_summary": {
+            "final_score": final_score,
+            "confidence": confidence,
+            "scores": scores
+        },
+        "stack_analysis": {
+            "claimed": claimed_stacks,
+            "confirmed": stack_result["confirmed"],
+            "false_claims": stack_result["false_claims"],
+            "unknown": stack_result["unknown"]
+        },
+        "repo_evidence": {
+            "languages": languages,
+            "commits": contribution["commit_count"],
+            "lines_added": contribution["lines_added"],
+            "lines_deleted": contribution["lines_deleted"],
+            "files_touched": len(contribution["files_touched"]),
+            "avg_lines_per_commit": normalized["avg_lines_per_commit"],
+            "avg_files_per_commit": normalized["avg_files_per_commit"],
+            "modular_structure": has_modular_structure(local_path),
+            "config_files": has_config_files(local_path),
+            "error_handling": has_error_handling(local_path),
+            "readme_exists": readme_exists(local_path)
+        },
+        "detected_stacks": stacks,
+        "graphcodebert": {
+            "scores": gcb_scores,
+            "error": gcb_error
+        },
+        "skill_assessment": skill_assessment
+    }
+
+    return {
+        "repo_url": repo_url,
+        "local_path": local_path,
+        "evaluation": evaluation_payload,
+        "graphcodebert": {
+            "scores": gcb_scores,
+            "error": gcb_error
+        },
+        "skill_assessment": skill_assessment
+    }
+
+
+if __name__ == "__main__":
+    resume_path = input("Resume path (optional, pdf/txt): ").strip()
+    resume_text = extract_resume_text(resume_path)
+    resume_claimed = extract_claimed_stacks_from_resume(resume_text)
+    resume_repo_urls = extract_github_urls_from_text(resume_text)
+
+    repo_urls_input = input("Repo URL(s) (comma-separated, optional): ").strip()
+    if repo_urls_input:
+        repo_urls = [r.strip() for r in repo_urls_input.split(",") if r.strip()]
+    elif resume_repo_urls:
+        repo_urls = resume_repo_urls
     else:
-        conf_text = "Low - Limited evidence or false claims detected"
-    print(f"  ({conf_text})")
-    print("=" * 40)
+        repo_urls = []
+
+    github_username = input("GitHub Username: ")
+    claimed_stacks_input = input("Claimed stacks (comma-separated, or leave empty to use resume): ")
+    claimed_stacks = [s.strip() for s in claimed_stacks_input.split(",") if s.strip()]
+
+    if resume_claimed:
+        if claimed_stacks:
+            claimed_stacks = sorted(set(claimed_stacks + resume_claimed))
+        else:
+            claimed_stacks = resume_claimed
+
+    claimed_stacks = [canonical_stack_name(s) for s in claimed_stacks]
+
+    # Load policy
+    policy = load_policy()
+    print(f"\nPolicy version: {policy['version']}")
+
+    if not repo_urls:
+        print("No repo URLs provided; using local ./temp_repo")
+        repo_urls = [""]
+
+    repo_results = []
+    combined_confirmed = set()
+    combined_gcb_scores = {}
+
+    for repo_url in repo_urls:
+        if repo_url:
+            _, repo_name = parse_repo_url(repo_url)
+            local_path = os.path.join("./temp_repo", repo_name)
+            print(f"\nAnalyzing repo: {repo_url}")
+        else:
+            local_path = "./temp_repo"
+            print("\nAnalyzing local repo: ./temp_repo")
+
+        try:
+            result = evaluate_repo(repo_url or None, local_path, github_username, claimed_stacks, policy)
+        except RuntimeError as exc:
+            print(f"❌ Skipped repo due to error: {exc}")
+            continue
+
+        if result is None:
+            print("⏭️  Skipped (no local repo and clone failed)")
+            continue
+
+        repo_results.append(result)
+
+        confirmed = {c.lower() for c in result["evaluation"]["stack_analysis"]["confirmed"]}
+        combined_confirmed |= confirmed
+
+        for stack, gcb in result["graphcodebert"]["scores"].items():
+            if stack not in combined_gcb_scores or gcb["similarity"] > combined_gcb_scores[stack]["similarity"]:
+                combined_gcb_scores[stack] = gcb
+
+        # Print summary per repo
+        scores = result["evaluation"]["evaluation_summary"]["scores"]
+        print("\n" + "=" * 40)
+        print("Score Breakdown")
+        print("-" * 40)
+        print(f"Stack Accuracy: {scores['stack_accuracy']}")
+        if result["evaluation"]["stack_analysis"]["confirmed"]:
+            print(f"  ✓ Confirmed: {', '.join(result['evaluation']['stack_analysis']['confirmed'])}")
+        if result["evaluation"]["stack_analysis"]["false_claims"]:
+            print(f"  ✗ False claims: {', '.join(result['evaluation']['stack_analysis']['false_claims'])}")
+        if result["evaluation"]["stack_analysis"]["unknown"]:
+            print(f"  ? Unknown: {', '.join(result['evaluation']['stack_analysis']['unknown'])}")
+        print(f"Commit Quality: {scores['commit_quality']}")
+        print(f"Code Quality: {scores['code_quality']}")
+        print(f"Project Depth: {scores['project_depth']}")
+        print(f"Documentation: {scores['documentation']}")
+        print("-" * 40)
+        print(f"Final Score: {result['evaluation']['evaluation_summary']['final_score']}")
+        print(f"Confidence: {result['evaluation']['evaluation_summary']['confidence']}")
+        print("=" * 40)
+
+    if not repo_results:
+        print("\n❌ No repos were successfully evaluated. Exiting.")
+        import sys
+        sys.exit(1)
+
+    combined_stack_result = {
+        "confirmed": list(combined_confirmed)
+    }
+    combined_skill_assessment = compute_skill_assessment(
+        claimed_stacks, combined_stack_result, combined_gcb_scores, policy
+    )
+
+    if combined_skill_assessment:
+        print("\nSkill Assessment")
+        print("-" * 40)
+        for item in combined_skill_assessment:
+            status = "Yes" if item["knows"] else "No"
+            print(f"{item['stack']}: {status} | Score: {item['score']} | {item['remark']}")
+
+    primary_evaluation = repo_results[0]["evaluation"]
+    
+    # Flatten multi-repo results to avoid circular references
+    multi_repo_summary = []
+    for result in repo_results:
+        multi_repo_summary.append({
+            "repo_url": result["repo_url"],
+            "local_path": result["local_path"],
+            "final_score": result["evaluation"]["evaluation_summary"]["final_score"],
+            "confidence": result["evaluation"]["evaluation_summary"]["confidence"],
+            "scores": result["evaluation"]["evaluation_summary"]["scores"],
+            "confirmed_stacks": result["evaluation"]["stack_analysis"]["confirmed"],
+            "false_claims": result["evaluation"]["stack_analysis"]["false_claims"]
+        })
+    
+    primary_evaluation["multi_repo_summary"] = multi_repo_summary
+    primary_evaluation["combined_skill_assessment"] = combined_skill_assessment
+    primary_evaluation["resume_evidence"] = {
+        "path": resume_path,
+        "extracted_claims": resume_claimed,
+        "extracted_repos": resume_repo_urls
+    }
+
+    # Save evaluation payload to JSON file for AI audit
+    import json
+    with open("evaluation_result.json", "w") as f:
+        json.dump(primary_evaluation, f, indent=2)
+
+    print("\n✓ Evaluation saved to evaluation_result.json")
+    print("  Run 'python ai_audit.py' for AI analysis")
