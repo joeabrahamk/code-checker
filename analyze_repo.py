@@ -1222,12 +1222,33 @@ def evaluate_repo(repo_url, local_path, github_username, claimed_stacks, policy)
     # Documentation Score - communication intent
     documentation_score = compute_documentation(local_path, claimed_stacks, policy)
 
+    # GraphCodeBERT quality scoring
+    graphcodebert_quality_score = 0
+    graphcodebert_quality_details = {}
+    gcb_quality_error = None
+    
+    gcb_quality_policy = policy.get("graphcodebert", {}).get("quality_scoring", {})
+    if gcb_quality_policy.get("enabled"):
+        try:
+            from graphcodebert_quality_scorer import score_code_quality
+            code_samples = sample_code_files(local_path, max_files=gcb_quality_policy.get("max_files", 10))
+            if code_samples:
+                quality_result = score_code_quality(code_samples, claimed_stacks, policy)
+                if quality_result:
+                    graphcodebert_quality_score = quality_result.get("overall_score", 0)
+                    graphcodebert_quality_details = quality_result
+                    print(f"  GraphCodeBERT Quality Score: {graphcodebert_quality_score}")
+        except Exception as e:
+            gcb_quality_error = str(e)
+            print(f"  GraphCodeBERT quality scoring disabled: {e}")
+
     scores = {
         "stack_accuracy": stack_result["score"],
         "commit_quality": commit_quality_score,
         "code_quality": code_quality_score,
         "project_depth": project_depth_score,
-        "documentation": documentation_score
+        "documentation": documentation_score,
+        "graphcodebert_quality": graphcodebert_quality_score
     }
 
     final_score = compute_final_score(scores, policy["final_score_weights"])
@@ -1264,7 +1285,9 @@ def evaluate_repo(repo_url, local_path, github_username, claimed_stacks, policy)
         "detected_stacks": stacks,
         "graphcodebert": {
             "scores": gcb_scores,
-            "error": gcb_error
+            "error": gcb_error,
+            "quality_analysis": graphcodebert_quality_details,
+            "quality_error": gcb_quality_error
         },
         "skill_assessment": skill_assessment
     }

@@ -1,31 +1,35 @@
 {
   "evaluation_summary": {
-    "final_score": 83.25,
-    "confidence": 0.9,
+    "final_score": 75.2,
+    "confidence": 0.85,
     "scores": {
       "stack_accuracy": 85,
       "commit_quality": 80,
       "code_quality": 100,
       "project_depth": 100,
-      "documentation": 30
+      "documentation": 30,
+      "graphcodebert_quality": 0
     }
   },
   "stack_analysis": {
     "claimed": [
-      "Java",
       "JavaScript",
+      "Python",
+      "Java",
       "React",
-      "Python"
+      "sese"
     ],
     "confirmed": [
-      "react",
+      "javascript",
       "python",
-      "javascript"
+      "react"
     ],
     "false_claims": [
       "java"
     ],
-    "unknown": []
+    "unknown": [
+      "sese"
+    ]
   },
   "repo_evidence": {
     "languages": {
@@ -52,37 +56,32 @@
   ],
   "graphcodebert": {
     "scores": {
-      "java": {
-        "similarity": 0.6399,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
-      },
       "javascript": {
         "similarity": 0.6476,
         "best_file": "frontend\\index.html"
+      },
+      "python": {
+        "similarity": 0.6413,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      },
+      "java": {
+        "similarity": 0.6399,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
       },
       "react": {
         "similarity": 0.6349,
         "best_file": "frontend\\src\\main.jsx"
       },
-      "python": {
-        "similarity": 0.6413,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      "sese": {
+        "similarity": 0.5953,
+        "best_file": "frontend\\index.html"
       }
     },
-    "error": null
+    "error": null,
+    "quality_analysis": {},
+    "quality_error": null
   },
   "skill_assessment": [
-    {
-      "stack": "Java",
-      "knows": false,
-      "score": 25.6,
-      "remark": "Weak evidence for this claim",
-      "evidence": {
-        "confirmed": false,
-        "graphcodebert_similarity": 0.6399,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
-      }
-    },
     {
       "stack": "JavaScript",
       "knows": true,
@@ -92,6 +91,28 @@
         "confirmed": true,
         "graphcodebert_similarity": 0.6476,
         "best_file": "frontend\\index.html"
+      }
+    },
+    {
+      "stack": "Python",
+      "knows": true,
+      "score": 85.7,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6413,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      }
+    },
+    {
+      "stack": "Java",
+      "knows": false,
+      "score": 25.6,
+      "remark": "Weak evidence for this claim",
+      "evidence": {
+        "confirmed": false,
+        "graphcodebert_similarity": 0.6399,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
       }
     },
     {
@@ -106,14 +127,14 @@
       }
     },
     {
-      "stack": "Python",
-      "knows": true,
-      "score": 85.7,
-      "remark": "Strong evidence in code",
+      "stack": "sese",
+      "knows": false,
+      "score": 23.8,
+      "remark": "Weak evidence for this claim",
       "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6413,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+        "confirmed": false,
+        "graphcodebert_similarity": 0.5953,
+        "best_file": "frontend\\index.html"
       }
     }
   ],
@@ -121,19 +142,20 @@
     {
       "repo_url": "https://github.com/joeabrahamk/frequency_labs.git",
       "local_path": "./temp_repo\\frequency_labs",
-      "final_score": 83.25,
-      "confidence": 0.9,
+      "final_score": 75.2,
+      "confidence": 0.85,
       "scores": {
         "stack_accuracy": 85,
         "commit_quality": 80,
         "code_quality": 100,
         "project_depth": 100,
-        "documentation": 30
+        "documentation": 30,
+        "graphcodebert_quality": 0
       },
       "confirmed_stacks": [
-        "react",
+        "javascript",
         "python",
-        "javascript"
+        "react"
       ],
       "false_claims": [
         "java"
@@ -142,17 +164,6 @@
   ],
   "combined_skill_assessment": [
     {
-      "stack": "Java",
-      "knows": false,
-      "score": 25.6,
-      "remark": "Weak evidence for this claim",
-      "evidence": {
-        "confirmed": false,
-        "graphcodebert_similarity": 0.6399,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
-      }
-    },
-    {
       "stack": "JavaScript",
       "knows": true,
       "score": 85.9,
@@ -161,6 +172,28 @@
         "confirmed": true,
         "graphcodebert_similarity": 0.6476,
         "best_file": "frontend\\index.html"
+      }
+    },
+    {
+      "stack": "Python",
+      "knows": true,
+      "score": 85.7,
+      "remark": "Strong evidence in code",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6413,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      }
+    },
+    {
+      "stack": "Java",
+      "knows": false,
+      "score": 25.6,
+      "remark": "Weak evidence for this claim",
+      "evidence": {
+        "confirmed": false,
+        "graphcodebert_similarity": 0.6399,
+        "best_file": "frontend\\src\\components\\rankingcard.jsx"
       }
     },
     {
@@ -175,14 +208,14 @@
       }
     },
     {
-      "stack": "Python",
-      "knows": true,
-      "score": 85.7,
-      "remark": "Strong evidence in code",
+      "stack": "sese",
+      "knows": false,
+      "score": 23.8,
+      "remark": "Weak evidence for this claim",
       "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6413,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+        "confirmed": false,
+        "graphcodebert_similarity": 0.5953,
+        "best_file": "frontend\\index.html"
       }
     }
   ],

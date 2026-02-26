@@ -10,7 +10,15 @@ Strict rules:
 
 FOCUS AREAS:
 
-1. CODE QUALITY ANALYSIS (Primary):
+1. GRAPHCODEBERT QUALITY ANALYSIS (Primary):
+- Review the code quality metrics (modularity, reusability, style, structure)
+- Validate anti-patterns detected are accurate
+- Confirm best practices align with the code samples analyzed
+- Identify if code_health assessment is reasonable
+- Flag any major code quality issues not caught by pattern detection
+- Suggest specific quality improvements based on the metrics
+
+2. CODE QUALITY ANALYSIS (Secondary):
 - Provide detailed analysis of code quality signals present vs missing
 - Identify specific code quality issues based on the evidence (file structure, naming, sizes)
 - Give actionable improvement suggestions for code organization
@@ -18,7 +26,7 @@ FOCUS AREAS:
 - Point out hygiene issues like inconsistent naming, large files, missing configs
 - Suggest specific refactoring opportunities based on the data
 
-2. SKILL KNOWLEDGE ASSESSMENT (Critical):
+3. SKILL KNOWLEDGE ASSESSMENT (Critical):
 - For each claimed stack, review the knowledge_score provided
 - Check if the indicators align with depth of implementation
 - Identify gaps between claimed expertise and actual implementation
@@ -26,18 +34,30 @@ FOCUS AREAS:
 - Suggest which skills need improvement based on detector patterns
 - Review language-specific patterns and their sophistication level
 
-3. CONSISTENCY & EVIDENCE:
+4. CONSISTENCY & EVIDENCE:
 - Verify if the scores align with evidence
-- Check for logical inconsistencies (e.g., high project_depth but low code_quality)
+- Check for logical inconsistencies (e.g., high project_depth but low code_quality or poor graphcodebert_quality)
 - Ensure skill_assessment levels match actual code patterns
+- Validate that graphcodebert_quality score reflects the actual code analysis
 
 Respond strictly in the following JSON format:
 
 {
-  "audit_summary": "Comprehensive overview including code quality, skill depth, and consistency",
+  "audit_summary": "Comprehensive overview including GraphCodeBERT quality, code quality, skill depth, and consistency",
   "flags": ["List any critical issues or inconsistencies"],
   "warnings": ["List any potential concerns or weak evidence areas"],
   "consistency_check": "Verify if the scores align with evidence and internal logic",
+  "graphcodebert_quality_review": {
+    "overall_assessment": "Is the graphcodebert_quality score reasonable?",
+    "modularity_analysis": "Assessment of code organization and separation of concerns",
+    "reusability_analysis": "Assessment of function parameterization and DRY principle",
+    "style_consistency_analysis": "Assessment of formatting and language conventions",
+    "structure_analysis": "Assessment of file organization and architecture",
+    "anti_patterns_validation": "Are detected anti-patterns valid? Any missed patterns?",
+    "best_practices_validation": "Are detected best practices present in code?",
+    "code_health_assessment": "Is the code_health rating (Excellent/Good/Acceptable/etc) accurate?",
+    "quality_improvement_areas": "Top 3 areas for improving code quality score"
+  },
   "code_quality_deep_dive": {
     "strengths": ["Specific code quality strengths based on evidence"],
     "weaknesses": ["Specific code quality issues identified"],
@@ -60,9 +80,7 @@ Respond strictly in the following JSON format:
     "overall_expertise_assessment": "Is the developer's actual skill level consistent with claims?"
   },
   "improvement_suggestions": [
-    "Detailed, actionable suggestions for improving code quality",
+    "Detailed, actionable suggestions for improving code quality metrics",
+    "Specific refactoring recommendations based on GraphCodeBERT analysis",
     "Skill-based recommendations (e.g., implement error boundaries for React)",
-    "Missing best practices to implement"
-  ],
-  "rule_tuning_observations": ["Suggestions for improving the evaluation system itself"]
-}
+    "Best practices to implement to increase modularity/reusability"

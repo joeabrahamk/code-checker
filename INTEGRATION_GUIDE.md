@@ -3,6 +3,7 @@
 ## Quick Start
 
 ### Step 1: Already Done
+
 - ✅ `scoring_policy.json` - Updated with skill assessment rules
 - ✅ `skill_assessment_engine.py` - Pattern detection module created
 - ✅ `audit_prompt.txt` - Updated for skill review
@@ -15,7 +16,7 @@ Find this section in `analyze_repo.py` (around line 1350):
 ```python
 def main():
     # ... existing code ...
-    
+
     # Compute all scores
     stack_accuracy_score = compute_stack_accuracy(stack_result, policy)
     commit_quality_score = compute_commit_quality(commits, policy)
@@ -23,7 +24,7 @@ def main():
     project_depth_score = compute_project_depth(repo_path, lines_stats, policy)
     documentation_score = compute_documentation(repo_path, claimed_stacks_raw, policy)
     confidence = compute_confidence(stack_result, policy)
-    
+
     # Build final payload
     evaluation = {
         "policy_version": policy["version"],
@@ -190,10 +191,11 @@ Each entry:
 
 ```json
 {
-  "stack": "React",                              // Technology name
-  "knowledge_score": 78,                         // 0-100
-  "level": "advanced",                           // expert/advanced/intermediate/beginner/novice
-  "indicators_detected": [                       // Patterns found
+  "stack": "React", // Technology name
+  "knowledge_score": 78, // 0-100
+  "level": "advanced", // expert/advanced/intermediate/beginner/novice
+  "indicators_detected": [
+    // Patterns found
     "hooks_usage (20 pts)",
     "state_management (15 pts)",
     "component_optimization (10 pts)",
@@ -205,13 +207,13 @@ Each entry:
 
 ### Interpretation Guide
 
-| Score | Level | Meaning |
-| --- | --- | --- |
-| 85-100 | Expert | Production-ready mastery |
-| 70-84 | Advanced | Professional understanding |
-| 50-69 | Intermediate | Functional knowledge |
-| 30-49 | Beginner | Basic usage |
-| 0-29 | Novice | Claimed but not evidenced |
+| Score  | Level        | Meaning                    |
+| ------ | ------------ | -------------------------- |
+| 85-100 | Expert       | Production-ready mastery   |
+| 70-84  | Advanced     | Professional understanding |
+| 50-69  | Intermediate | Functional knowledge       |
+| 30-49  | Beginner     | Basic usage                |
+| 0-29   | Novice       | Claimed but not evidenced  |
 
 ---
 
@@ -312,6 +314,7 @@ A: Ensure `skill_assessment_engine.py` is in same directory as `analyze_repo.py`
 ## Support
 
 See:
+
 - [skill_assessment.md](skill_assessment.md) - Full documentation
 - [score_logic.md](score_logic.md) - Score calculation details
 - [SKILL_ASSESSMENT_IMPLEMENTATION.md](SKILL_ASSESSMENT_IMPLEMENTATION.md) - Implementation overview

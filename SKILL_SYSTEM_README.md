@@ -11,12 +11,14 @@ You requested a system to measure **understanding and knowledge depth** for each
 ## What You Now Have
 
 ### 1. Core System
+
 - ✅ `skill_assessment_engine.py` - Pattern detection engine (50+ patterns)
 - ✅ `scoring_policy.json` - Updated with skill rules
 - ✅ Language-specific indicators for: JavaScript, Python, React, Java, SQL, Docker
 - ✅ Knowledge levels: Expert (85+), Advanced (70-84), Intermediate (50-69), Beginner (30-49), Novice (0-29)
 
 ### 2. Documentation
+
 - ✅ `skill_assessment.md` - Complete guide (1,000+ lines)
 - ✅ `SKILL_ASSESSMENT_IMPLEMENTATION.md` - Implementation overview
 - ✅ `INTEGRATION_GUIDE.md` - Step-by-step integration
@@ -24,6 +26,7 @@ You requested a system to measure **understanding and knowledge depth** for each
 - ✅ Updated `audit_prompt.txt` - Added skill review instructions
 
 ### 3. Key Features
+
 - **Separate from final score** - Doesn't affect 0-100 rating
 - **Deterministic** - Same input always produces same output
 - **Transparent** - All patterns visible in policy JSON
@@ -76,12 +79,14 @@ You requested a system to measure **understanding and knowledge depth** for each
 ## Key Differences
 
 ### Stack Accuracy (existing, 25% of final score)
+
 - **Question:** Is this tech actually used?
 - **Evidence:** File presence, dependencies, GitHub language stats
 - **Score:** 0-100 (penalty-based)
 - **Impact:** Affects final score
 
 ### Skill Knowledge (new, separate)
+
 - **Question:** How well is it understood?
 - **Evidence:** Code patterns, implementation complexity
 - **Score:** 0-100 (indicator-based)
@@ -105,6 +110,7 @@ The skill assessment appears in `evaluation_result.json`:
 ```
 
 Each stack shows:
+
 - Knowledge score (0-100)
 - Understanding level
 - Evidence (detected patterns)
@@ -127,7 +133,7 @@ Identify gaps in technical depth:
 
 ```
 React: Advanced ✓ (78/100)
-Python: Beginner ✗ (25/100)  
+Python: Beginner ✗ (25/100)
 JavaScript: Intermediate ~ (62/100)
 
 → Strong in React, weak in Python. Consider accordingly.
@@ -140,6 +146,7 @@ JavaScript: Intermediate ~ (62/100)
 ### Increase React Hooks Points
 
 `scoring_policy.json`:
+
 ```json
 "react": {
   "hooks_usage": 30,  // Was 20
@@ -150,6 +157,7 @@ JavaScript: Intermediate ~ (62/100)
 ### Add New Language (Go)
 
 `scoring_policy.json`:
+
 ```json
 "skill_knowledge_assessment": {
   "language_specific_signals": {
@@ -164,6 +172,7 @@ JavaScript: Intermediate ~ (62/100)
 ```
 
 `skill_assessment_engine.py` - Add to `_detect_pattern()`:
+
 ```python
 elif stack == 'go':
     patterns = {
@@ -179,6 +188,7 @@ elif stack == 'go':
 Make intermediate level start at 60 instead of 50:
 
 `scoring_policy.json`:
+
 ```json
 "knowledge_thresholds": {
   "intermediate": { "min": 60 }  // Was 50
@@ -200,17 +210,20 @@ Make intermediate level start at 60 instead of 50:
 ## Next Steps
 
 ### Immediate
+
 1. Review `skill_assessment.md` to understand the system
 2. Check `scoring_policy.json` for patterns you want to adjust
 3. Follow `INTEGRATION_GUIDE.md` to integrate into `analyze_repo.py`
 
 ### Testing
+
 1. Run `py analyze_repo.py` on a sample repo
 2. Check `evaluation_result.json` for `skill_assessment` array
 3. Verify scores match your expectations
 4. Run `py ai_audit.py` to get AI's skill review
 
 ### Customization
+
 1. Add/modify patterns in `scoring_policy.json`
 2. Adjust point values based on importance
 3. Change thresholds to match your needs
@@ -226,19 +239,21 @@ Make intermediate level start at 60 instead of 50:
 ✅ **Non-invasive** - Doesn't affect final score  
 ✅ **Actionable** - Shows exactly what's missing  
 ✅ **Language-aware** - Different patterns for each tech  
-✅ **Scalable** - Easy to add new languages/patterns  
+✅ **Scalable** - Easy to add new languages/patterns
 
 ---
 
 ## Limitations & Future Work
 
 ### Current Limitations
+
 1. Pattern-based only (regex matching)
 2. Limited to 50 code files per scan
 3. May miss non-standard coding styles
 4. English-centric variable naming
 
 ### Future Enhancements
+
 1. Semantic analysis (GraphCodeBERT integration)
 2. Temporal analysis (track skill progression)
 3. Test coverage as signal
@@ -256,25 +271,33 @@ Make intermediate level start at 60 instead of 50:
 ```javascript
 // Pattern 1: Hooks with dependencies
 const [state, setState] = useState(null);
-useEffect(() => { /* ... */ }, [state]);
+useEffect(() => {
+  /* ... */
+}, [state]);
 
 // Pattern 2: Custom hooks
 function useApi(url) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  useEffect(() => { /* ... */ }, [url]);
+  useEffect(() => {
+    /* ... */
+  }, [url]);
   return { data, error };
 }
 
 // Pattern 3: Error boundaries
 class ErrorBoundary extends React.Component {
-  componentDidCatch(error, errorInfo) { /* ... */ }
-  render() { return this.props.children; }
+  componentDidCatch(error, errorInfo) {
+    /* ... */
+  }
+  render() {
+    return this.props.children;
+  }
 }
 
 // Pattern 4: Optimization
 const MemoComponent = React.memo(Component);
-const optimized = useCallback(() => { }, [deps]);
+const optimized = useCallback(() => {}, [deps]);
 
 // Pattern 5: State management
 const { user } = useContext(UserContext);
@@ -294,7 +317,9 @@ function App() {
 
 // No hooks, no advanced patterns
 class Component extends React.Component {
-  render() { return <p>Content</p>; }
+  render() {
+    return <p>Content</p>;
+  }
 }
 ```
 
@@ -307,6 +332,7 @@ class Component extends React.Component {
 This system fills a critical gap: **measuring understanding depth, not just presence**.
 
 It provides:
+
 - **For developers:** Clear feedback on what to improve
 - **For reviewers:** Evidence-based skill assessment
 - **For recruiters:** Accurate technical depth evaluation
@@ -318,6 +344,7 @@ All while remaining **deterministic, transparent, and customizable**.
 ## Questions?
 
 See the comprehensive documentation:
+
 - [skill_assessment.md](skill_assessment.md) - Full guide
 - [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) - How to integrate
 - [score_logic.md](score_logic.md) - How scoring works

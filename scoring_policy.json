@@ -3,11 +3,12 @@
   "description": "Resume scoring policy - ground truth evaluation",
 
   "final_score_weights": {
-    "stack_accuracy": 0.25,
-    "commit_quality": 0.30,
+    "stack_accuracy": 0.22,
+    "commit_quality": 0.26,
     "code_quality": 0.20,
-    "project_depth": 0.15,
-    "documentation": 0.10
+    "project_depth": 0.13,
+    "documentation": 0.09,
+    "graphcodebert_quality": 0.10
   },
 
   "stack_accuracy": {
@@ -148,8 +149,36 @@
 
   "graphcodebert": {
     "enabled": true,
-    "max_files": 5,
-    "max_chars_per_file": 2000,
+    "quality_scoring": {
+      "enabled": true,
+      "max_files": 10,
+      "metrics": {
+        "modularity": {
+          "weight": 0.25,
+          "description": "Code separation of concerns and organization"
+        },
+        "reusability": {
+          "weight": 0.25,
+          "description": "Functions parameterized, DRY principle, composition patterns"
+        },
+        "style_consistency": {
+          "weight": 0.20,
+          "description": "Indentation, formatting, language-specific conventions"
+        },
+        "structure": {
+          "weight": 0.30,
+          "description": "File organization, layering, clear architecture"
+        }
+      },
+      "anti_pattern_penalty": 5,
+      "best_practice_bonus": 2,
+      "quality_thresholds": {
+        "excellent": 80,
+        "good": 70,
+        "acceptable": 60,
+        "needs_improvement": 50
+      }
+    },
     "skill_score": {
       "confirmed_weight": 0.6,
       "similarity_weight": 0.4,

@@ -12,13 +12,13 @@ This is different from Stack Accuracy, which only confirms presence/absence.
 
 ## Key Difference: Accuracy vs. Knowledge
 
-| Aspect | Stack Accuracy | Skill Knowledge |
-| --- | --- | --- |
-| **Question** | Is this tech actually used? | Does developer understand it deeply? |
-| **Evidence** | File presence, dependencies | Code patterns, best practices, complexity |
-| **Score Range** | 0-100 (penalty-based) | 0-100 (indicator-based) |
-| **Affects Final Score** | Yes (25% weight) | No (informational only) |
-| **Purpose** | Prevent false claims | Gauge expertise level |
+| Aspect                  | Stack Accuracy              | Skill Knowledge                           |
+| ----------------------- | --------------------------- | ----------------------------------------- |
+| **Question**            | Is this tech actually used? | Does developer understand it deeply?      |
+| **Evidence**            | File presence, dependencies | Code patterns, best practices, complexity |
+| **Score Range**         | 0-100 (penalty-based)       | 0-100 (indicator-based)                   |
+| **Affects Final Score** | Yes (25% weight)            | No (informational only)                   |
+| **Purpose**             | Prevent false claims        | Gauge expertise level                     |
 
 ---
 
@@ -26,15 +26,15 @@ This is different from Stack Accuracy, which only confirms presence/absence.
 
 Each indicator represents a depth signal and is worth points:
 
-| Indicator | Points | What It Means |
-| --- | --- | --- |
-| **Advanced Patterns** | 20 | Uses sophisticated, non-obvious patterns |
-| **Error Handling** | 15 | Robust try/catch or equivalent error paths |
-| **State Management** | 15 | Proper state flow, no prop drilling |
-| **API Integration** | 15 | Proper async patterns, error handling |
-| **Testing Coverage** | 10 | Tests exist, reasonable coverage |
-| **Performance Optimization** | 10 | Memoization, caching, lazy loading |
-| **Security Practices** | 5 | Input validation, sanitization |
+| Indicator                    | Points | What It Means                              |
+| ---------------------------- | ------ | ------------------------------------------ |
+| **Advanced Patterns**        | 20     | Uses sophisticated, non-obvious patterns   |
+| **Error Handling**           | 15     | Robust try/catch or equivalent error paths |
+| **State Management**         | 15     | Proper state flow, no prop drilling        |
+| **API Integration**          | 15     | Proper async patterns, error handling      |
+| **Testing Coverage**         | 10     | Tests exist, reasonable coverage           |
+| **Performance Optimization** | 10     | Memoization, caching, lazy loading         |
+| **Security Practices**       | 5      | Input validation, sanitization             |
 
 ---
 
@@ -42,13 +42,13 @@ Each indicator represents a depth signal and is worth points:
 
 Scores are bucketed by understanding level:
 
-| Level | Score Range | Description |
-| --- | --- | --- |
-| **Expert** | 85-100 | Deep mastery with industry best practices |
-| **Advanced** | 70-84 | Strong understanding & proper usage |
-| **Intermediate** | 50-69 | Functional knowledge, basic patterns |
-| **Beginner** | 30-49 | Basic usage, minimal patterns |
-| **Novice** | 0-29 | Claimed but not evidenced |
+| Level            | Score Range | Description                               |
+| ---------------- | ----------- | ----------------------------------------- |
+| **Expert**       | 85-100      | Deep mastery with industry best practices |
+| **Advanced**     | 70-84       | Strong understanding & proper usage       |
+| **Intermediate** | 50-69       | Functional knowledge, basic patterns      |
+| **Beginner**     | 30-49       | Basic usage, minimal patterns             |
+| **Novice**       | 0-29        | Claimed but not evidenced                 |
 
 ---
 
@@ -208,11 +208,11 @@ def compute_skill_knowledge_per_stack(repo_path, claimed_stacks, policy):
     """Compute knowledge score for each claimed stack."""
     skill_policy = policy["skill_knowledge_assessment"]
     results = []
-    
+
     for stack in claimed_stacks:
         score = 0
         indicators = []
-        
+
         # Language-specific scanning
         if stack.lower() in skill_policy["language_specific_signals"]:
             signals = skill_policy["language_specific_signals"][stack.lower()]
@@ -220,14 +220,14 @@ def compute_skill_knowledge_per_stack(repo_path, claimed_stacks, policy):
                 if pattern_found_in_codebase(repo_path, pattern, stack):
                     score += points
                     indicators.append(f"{pattern} ({points} pts)")
-        
+
         results.append({
             "stack": stack,
             "knowledge_score": min(100, score),
             "indicators": indicators,
             "level": get_knowledge_level(score)
         })
-    
+
     return results
 ```
 
@@ -277,29 +277,29 @@ Example: Make React hooks worth more:
 ### Score: 85+ (Expert)
 
 ```
-"Advanced React patterns with hooks, context, and custom hooks. 
-Demonstrates understanding of performance optimization, memoization, 
+"Advanced React patterns with hooks, context, and custom hooks.
+Demonstrates understanding of performance optimization, memoization,
 and error handling. Production-ready code quality."
 ```
 
 ### Score: 70-84 (Advanced)
 
 ```
-"Solid React knowledge. Good state management and component patterns. 
+"Solid React knowledge. Good state management and component patterns.
 Shows understanding of common best practices."
 ```
 
 ### Score: 50-69 (Intermediate)
 
 ```
-"Functional React implementation. Basic patterns present but missing 
+"Functional React implementation. Basic patterns present but missing
 advanced optimizations and error handling strategies."
 ```
 
 ### Score: 30-49 (Beginner)
 
 ```
-"Basic React usage. Limited patterns detected. Would benefit from 
+"Basic React usage. Limited patterns detected. Would benefit from
 deeper study of hooks, state management, and optimization."
 ```
 
@@ -343,19 +343,25 @@ A: Pattern detection is deterministic and reproducible. AI could hallucinate.
 ```javascript
 // Pattern 1: Hooks usage
 const [count, setCount] = useState(0);
-useEffect(() => { /* ... */ }, [count]);
+useEffect(() => {
+  /* ... */
+}, [count]);
 const MyContext = createContext();
 
 // Pattern 2: Error boundaries
 class ErrorBoundary extends React.Component {
-  componentDidCatch(error, errorInfo) { /* ... */ }
+  componentDidCatch(error, errorInfo) {
+    /* ... */
+  }
 }
 
 // Pattern 3: Optimization
-const MemoComponent = React.memo(({item}) => <div>{item}</div>);
+const MemoComponent = React.memo(({ item }) => <div>{item}</div>);
 
 // Pattern 4: Custom hooks
-function useApi(url) { /* ... */ }
+function useApi(url) {
+  /* ... */
+}
 ```
 
 **Scoring:**

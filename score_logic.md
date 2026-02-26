@@ -18,9 +18,9 @@ These are collected in [analyze_repo.py](analyze_repo.py) and summarized into a 
 
 ## 2) Final Score Formula
 
-The final score is a weighted sum of five sub-scores:
+The final score is a weighted sum of six sub-scores:
 
-$$\text{Final Score} = (S_a \cdot w_a) + (S_c \cdot w_c) + (S_q \cdot w_q) + (S_p \cdot w_p) + (S_d \cdot w_d)$$
+$$\text{Final Score} = (S_a \cdot w_a) + (S_c \cdot w_c) + (S_q \cdot w_q) + (S_p \cdot w_p) + (S_d \cdot w_d) + (S_g \cdot w_g)$$
 
 Where:
 
@@ -29,18 +29,22 @@ Where:
 - $S_q$ = Code Quality
 - $S_p$ = Project Depth
 - $S_d$ = Documentation
+- $S_g$ = GraphCodeBERT Quality (NEW)
 
 Weights are configured in [scoring_policy.json](scoring_policy.json):
 
 ```json
 "final_score_weights": {
-  "stack_accuracy": 0.25,
-  "commit_quality": 0.30,
+  "stack_accuracy": 0.22,
+  "commit_quality": 0.26,
   "code_quality": 0.20,
-  "project_depth": 0.15,
-  "documentation": 0.10
+  "project_depth": 0.13,
+  "documentation": 0.09,
+  "graphcodebert_quality": 0.10
 }
 ```
+
+**Total = 1.00** (all weights sum to 100%)
 
 ---
 
@@ -206,6 +210,7 @@ Configured in [scoring_policy.json](scoring_policy.json):
 **Purpose:** Measure **understanding depth** for each claimed stack independently from Stack Accuracy.
 
 This is stored separately and does **not** affect the final score. It answers:
+
 > "How well does the developer understand this technology?"
 
 ### Knowledge Levels
@@ -221,6 +226,7 @@ This is stored separately and does **not** affect the final score. It answers:
 The system detects patterns specific to each language:
 
 **JavaScript/TypeScript:**
+
 - Async/await usage
 - Modern ES6 syntax
 - Closures and scope understanding
@@ -228,6 +234,7 @@ The system detects patterns specific to each language:
 - DOM manipulation
 
 **Python:**
+
 - List comprehensions
 - Decorators
 - Exception handling
@@ -235,6 +242,7 @@ The system detects patterns specific to each language:
 - Generators
 
 **React:**
+
 - Hooks usage (useState, useEffect, useContext)
 - State management strategy
 - Component optimization (React.memo)
@@ -242,6 +250,7 @@ The system detects patterns specific to each language:
 - Custom hooks
 
 **Java:**
+
 - OOP principles
 - Generics
 - Exception handling
@@ -249,6 +258,7 @@ The system detects patterns specific to each language:
 - Streams API
 
 **SQL:**
+
 - Complex joins and aggregates
 - Query optimization
 - Transactions
@@ -256,6 +266,7 @@ The system detects patterns specific to each language:
 - Normalization
 
 **Docker:**
+
 - Multi-stage builds
 - Volume management
 - Networking
@@ -265,13 +276,15 @@ The system detects patterns specific to each language:
 
 Each detected pattern adds points. For example, React:
 
-$$\text{React Score} = \begin{cases}
+$$
+\text{React Score} = \begin{cases}
 +20 & \text{if hooks usage detected} \\
 +15 & \text{if state management detected} \\
 +10 & \text{if component optimization detected} \\
 +10 & \text{if error boundaries detected} \\
 +5 & \text{if custom hooks detected}
-\end{cases}$$
+\end{cases}
+$$
 
 Capped at 100.
 
@@ -305,7 +318,124 @@ Capped at 100.
 
 ---
 
-## 10) Determinism Guarantees
+## 8) GraphCodeBERT Quality (10%)
+
+**Purpose:** Measure code quality merits through semantic analysis. Scores style, modularity, reusability, and structure that can't be captured by rule-based metrics.
+
+**Method:**
+
+1. Sample up to 10 representative code files
+2. Analyze semantic properties (without ML model)
+3. Detect anti-patterns and best practices
+4. Combine metrics into overall quality score
+
+**Four Quality Metrics:**
+
+### Modularity (25% weight)
+
+Measures separation of concerns and code organization.
+
+- Base: 50 points
+- +20 for good function/class definition density
+- +15 for proper module imports/requires
+- +10 for architectural separation (services, components, models)
+- +10 for consistent naming conventions (camelCase/snake_case)
+- Max: 100 points
+
+**Indicators:** Presence of service/component/controller folders, clear function boundaries, organized structure.
+
+### Reusability (25% weight)
+
+Measures how composable and reusable code is.
+
+- Base: 50 points
+- +25 for parameterized functions (vs hardcoded)
+- +15 for DRY principle (>90% unique lines)
+- +10 for functional/composition patterns (map, filter, pipe)
+- +15 for abstractions (interfaces, base classes, protocols)
+- Max: 100 points
+
+**Indicators:** Functions accept parameters, no code duplication, higher-order functions, clear abstraction levels.
+
+### Style Consistency (20% weight)
+
+Measures formatting consistency and language conventions.
+
+- Base: 50 points
+- +20 for indentation consistency (80%+ same style)
+- +15 for proper spacing/formatting
+- +5-10 for language-specific conventions (PEP 8, ES6, etc.)
+- Max: 100 points
+
+**Indicators:** Consistent indentation, proper spacing, language-specific best practices.
+
+### Structure Management (30% weight)
+
+Measures overall code architecture and organization.
+
+- Base: 50 points
+- +25 for reasonable file sizes (30-200 lines average)
+- +10 for diverse file purposes
+- +5 for clear directory structure with meaningful separations
+- Max: 100 points
+
+**Indicators:** Well-sized files, layered architecture, separation of concerns.
+
+**Anti-Pattern Penalties:**
+
+Each anti-pattern detected reduces the score by 5 points:
+
+**General:**
+
+- Global state usage (window.\*, global, $GLOBALS)
+- Many unresolved TODOs/FIXMEs (>5)
+- Very long functions (>150 lines)
+- Deep nesting (>6 levels)
+
+**Python:**
+
+- Bare `except: pass`
+- Improper boolean comparison (`== True`, `== False`, `== None`)
+
+**JavaScript:**
+
+- Using `var` instead of `const`/`let`
+- Using `==` instead of `===`
+
+**React:**
+
+- Using class state instead of hooks
+- Using array index as React key
+
+**Code Health Assessment:**
+
+- Excellent: ≥80 + no anti-patterns
+- Good: ≥70 + ≤1 anti-pattern
+- Acceptable: ≥60
+- Needs Improvement: ≥50
+- Poor: <50
+
+**Example Calculation:**
+
+```
+Code sample analysis:
+- Modularity: 72 (good function organization)
+- Reusability: 68 (some DRY violations)
+- Style Consistency: 81 (consistent formatting)
+- Structure: 79 (clear layering)
+
+Overall Score = (72×0.25) + (68×0.25) + (81×0.20) + (79×0.30)
+              = 18 + 17 + 16.2 + 23.7
+              = 74.9
+
+Anti-patterns detected: 1 (var usage)
+Penalty: -5
+Final GraphCodeBERT Quality = 69.9
+```
+
+---
+
+## 9) Determinism Guarantees
 
 - All scores are **rule-based** and **policy-driven**.
 - No model can change scores.
