@@ -18,12 +18,12 @@
 
 ## 4 Quality Metrics
 
-| Metric | Weight | Measures |
-|--------|--------|----------|
-| **Modularity** | 25% | Code organization, separation of concerns |
-| **Reusability** | 25% | Parameterized functions, DRY, composition |
-| **Style** | 20% | Indentation, formatting, conventions |
-| **Structure** | 30% | File organization, layering, architecture |
+| Metric          | Weight | Measures                                  |
+| --------------- | ------ | ----------------------------------------- |
+| **Modularity**  | 25%    | Code organization, separation of concerns |
+| **Reusability** | 25%    | Parameterized functions, DRY, composition |
+| **Style**       | 20%    | Indentation, formatting, conventions      |
+| **Structure**   | 30%    | File organization, layering, architecture |
 
 ---
 
@@ -32,6 +32,7 @@
 **Penalize by -5 points each:**
 
 General:
+
 - Global state usage
 - Many TODOs (>5)
 - Long functions (>150 lines)
@@ -63,6 +64,7 @@ Final = 22% Stack + 26% Commits + 20% Code + 13% Depth + 9% Docs + 10% GraphCode
 ## Configuration
 
 ### Enable/Disable
+
 ```json
 {
   "graphcodebert": {
@@ -72,11 +74,13 @@ Final = 22% Stack + 26% Commits + 20% Code + 13% Depth + 9% Docs + 10% GraphCode
 ```
 
 ### Adjust Penalty
+
 ```json
 { "anti_pattern_penalty": 5 }
 ```
 
 ### Change Thresholds
+
 ```json
 {
   "quality_thresholds": {

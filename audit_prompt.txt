@@ -40,9 +40,26 @@ FOCUS AREAS:
 - Ensure skill_assessment levels match actual code patterns
 - Validate that graphcodebert_quality score reflects the actual code analysis
 
+REQUIRED OUTPUT RULES:
+- Every stack_assessment MUST include numeric `score` from provided evidence.
+- Every stack_assessment MUST include `graphcodebert_independent_score` from provided evidence.
+- `gaps` MUST always be an array of strings with at least 1 item.
+- `recommendations` MUST always be an array of strings with at least 1 item.
+- Include a top-level `score_summary` object with final score, confidence, and per-stack independent GraphCodeBERT scores from evidence.
+
 Respond strictly in the following JSON format:
 
 {
+  "score_summary": {
+    "final_score": "from evaluation_summary.final_score",
+    "confidence": "from evaluation_summary.confidence",
+    "stack_independent_scores": [
+      {
+        "stack": "Stack name",
+        "independent_score": "from graphcodebert.stack_independent_scores"
+      }
+    ]
+  },
   "audit_summary": "Comprehensive overview including GraphCodeBERT quality, code quality, skill depth, and consistency",
   "flags": ["List any critical issues or inconsistencies"],
   "warnings": ["List any potential concerns or weak evidence areas"],
@@ -70,11 +87,13 @@ Respond strictly in the following JSON format:
     "stack_assessments": [
       {
         "stack": "Stack name",
+        "score": "numeric skill score from skill_assessment.score",
+        "graphcodebert_independent_score": "numeric value from skill_assessment.evidence.graphcodebert_independent_score",
         "claimed_level": "from resume/claim",
         "demonstrated_level": "from skill_score",
         "alignment": "Expert/Advanced/Intermediate/Beginner/Novice - does it match?",
-        "gaps": "What evidence is missing to support claim",
-        "recommendations": "How to improve this skill demonstration"
+        "gaps": ["What evidence is missing to support claim"],
+        "recommendations": ["How to improve this skill demonstration"]
       }
     ],
     "overall_expertise_assessment": "Is the developer's actual skill level consistent with claims?"
@@ -84,3 +103,5 @@ Respond strictly in the following JSON format:
     "Specific refactoring recommendations based on GraphCodeBERT analysis",
     "Skill-based recommendations (e.g., implement error boundaries for React)",
     "Best practices to implement to increase modularity/reusability"
+  ]
+}

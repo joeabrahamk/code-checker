@@ -37,16 +37,19 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 ## What It Does
 
 ### Input
+
 - Up to 10 representative code files from repository
 - List of claimed technology stacks
 
 ### Processing
+
 1. Analyzes 4 quality metrics (0-100 each)
 2. Detects 8+ anti-patterns per language (-5 points each)
 3. Recognizes 20+ best practices per language
 4. Assesses overall code health
 
 ### Output
+
 ```json
 {
   "overall_score": 74.3,
@@ -65,6 +68,7 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 ## How It Works
 
 ### Step 1: Code Sampling
+
 - Samples up to 10 representative files
 - Prioritizes entry points (app.js, main.py, index.html)
 - Prioritizes organized structure (components/, services/, etc.)
@@ -73,6 +77,7 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 ### Step 2: Metric Scoring
 
 **Modularity (25% weight)**
+
 - Base: 50 points
 - +20 for good function/class ratio
 - +15 for proper imports/modules
@@ -81,6 +86,7 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 - Max: 100
 
 **Reusability (25% weight)**
+
 - Base: 50 points
 - +25 for parameterized functions
 - +15 for DRY principle (>90% unique lines)
@@ -89,6 +95,7 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 - Max: 100
 
 **Style Consistency (20% weight)**
+
 - Base: 50 points
 - +20 for indentation consistency (80%+)
 - +15 for good spacing/formatting
@@ -96,6 +103,7 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 - Max: 100
 
 **Structure Management (30% weight)**
+
 - Base: 50 points
 - +25 for reasonable file sizes (30-200 lines)
 - +10 for varied file purposes
@@ -103,10 +111,12 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 - Max: 100
 
 ### Step 3: Penalty & Bonus
+
 - Each anti-pattern: -5 points (cumulative)
 - Best practices: informational (no bonus)
 
 ### Step 4: Health Assessment
+
 ```
 ≥80 + no anti-patterns  → Excellent
 ≥70 + ≤1 anti-pattern   → Good
@@ -122,33 +132,36 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 ### In scoring_policy.json
 
 **Enable/Disable:**
+
 ```json
 {
   "graphcodebert": {
     "quality_scoring": {
-      "enabled": true  // Set false to disable
+      "enabled": true // Set false to disable
     }
   }
 }
 ```
 
 **Metric Weights:**
+
 ```json
 {
   "metrics": {
     "modularity": { "weight": 0.25 },
     "reusability": { "weight": 0.25 },
-    "style_consistency": { "weight": 0.20 },
-    "structure": { "weight": 0.30 }
+    "style_consistency": { "weight": 0.2 },
+    "structure": { "weight": 0.3 }
   }
 }
 ```
 
 **Tuning Parameters:**
+
 ```json
 {
-  "max_files": 10,                    // Code files to sample
-  "anti_pattern_penalty": 5,          // Points per issue
+  "max_files": 10, // Code files to sample
+  "anti_pattern_penalty": 5, // Points per issue
   "quality_thresholds": {
     "excellent": 80,
     "good": 70,
@@ -159,15 +172,16 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 ```
 
 **Final Score Weights:**
+
 ```json
 {
   "final_score_weights": {
     "stack_accuracy": 0.22,
     "commit_quality": 0.26,
-    "code_quality": 0.20,
+    "code_quality": 0.2,
     "project_depth": 0.13,
     "documentation": 0.09,
-    "graphcodebert_quality": 0.10
+    "graphcodebert_quality": 0.1
   }
 }
 ```
@@ -179,41 +193,49 @@ GraphCodeBERT Quality Scoring is a semantic code analysis layer that measures co
 ### Anti-Patterns Detected
 
 **General (All Languages)**
+
 - Global state usage (`global`, `window.*`, `$GLOBALS`)
 - Many unresolved TODOs/FIXMEs (>5)
 - Very long functions (>150 lines)
 - Deep nesting (>6 levels)
 
 **Python-Specific**
+
 - Bare `except: pass`
 - Improper boolean comparison (`== True`, `== False`, `== None`)
 
 **JavaScript-Specific**
+
 - Using `var` instead of `const`/`let`
 - Using `==` instead of `===`
 
 **React-Specific**
+
 - Using class state instead of hooks
 - Using array index as React key
 
 ### Best Practices Recognized
 
 **All Languages**
+
 - Good documentation/comments
 - Error handling implemented
 - Proper entry point handling
 
 **Python**
+
 - Context managers used (`with` statements)
 - Decorators used (`@decorator`)
 - Pythonic patterns (list comprehensions)
 
 **JavaScript/TypeScript**
+
 - Arrow functions used
 - Modern async/await patterns
 - Modern variable declarations (`const`/`let`)
 
 **React**
+
 - React Hooks used (useState, useEffect)
 - Performance optimization (React.memo, useMemo)
 
@@ -388,16 +410,16 @@ print(json.dumps(result, indent=2))
 
 ## Performance Characteristics
 
-| Operation | Time |
-|-----------|------|
-| Sample files | <10ms |
-| Modularity analysis | <5ms |
-| Reusability analysis | <5ms |
-| Style analysis | <5ms |
-| Structure analysis | <5ms |
-| Anti-pattern detection | <10ms |
-| Best practice detection | <10ms |
-| **Total** | **<50ms** |
+| Operation               | Time      |
+| ----------------------- | --------- |
+| Sample files            | <10ms     |
+| Modularity analysis     | <5ms      |
+| Reusability analysis    | <5ms      |
+| Style analysis          | <5ms      |
+| Structure analysis      | <5ms      |
+| Anti-pattern detection  | <10ms     |
+| Best practice detection | <10ms     |
+| **Total**               | **<50ms** |
 
 **Overhead:** <0.2% of total evaluation time
 

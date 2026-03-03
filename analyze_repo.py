@@ -783,6 +783,7 @@ def compute_skill_assessment(claimed_stacks, stack_result, graphcodebert_scores,
 
     gcb_policy = policy.get("graphcodebert", {})
     score_policy = gcb_policy.get("skill_score", {})
+    independent_only = score_policy.get("independent_only", True)
     confirmed_weight = score_policy.get("confirmed_weight", 0.6)
     similarity_weight = score_policy.get("similarity_weight", 0.4)
     knows_threshold = score_policy.get("knows_threshold", 55)
@@ -801,8 +802,12 @@ def compute_skill_assessment(claimed_stacks, stack_result, graphcodebert_scores,
         confirmed = lower in confirmed_set
         gcb = graphcodebert_scores.get(lower, {}) if graphcodebert_scores else {}
         similarity = gcb.get("similarity", 0.0)
+        independent_score = gcb.get("independent_score")
 
-        score = (confirmed_weight * (100 if confirmed else 0)) + (similarity_weight * similarity * 100)
+        if independent_only:
+            score = independent_score if independent_score is not None else round(similarity * 100, 1)
+        else:
+            score = (confirmed_weight * (100 if confirmed else 0)) + (similarity_weight * similarity * 100)
         score = max(0, min(100, round(score, 1)))
 
         if score >= strong:
@@ -824,11 +829,40 @@ def compute_skill_assessment(claimed_stacks, stack_result, graphcodebert_scores,
             "evidence": {
                 "confirmed": confirmed,
                 "graphcodebert_similarity": similarity,
+                "graphcodebert_independent_score": independent_score,
                 "best_file": gcb.get("best_file")
             }
         })
 
     return results
+
+
+def build_graphcodebert_stack_scores(claimed_stacks, gcb_scores):
+    """Build normalized per-stack independent GraphCodeBERT scores for reporting."""
+    if not claimed_stacks:
+        return []
+
+    rows = []
+    for raw in claimed_stacks:
+        lower = RESUME_ALIASES.get(raw.lower(), raw.lower())
+        display = canonical_stack_name(lower)
+        gcb = gcb_scores.get(lower, {}) if gcb_scores else {}
+        similarity = gcb.get("similarity", 0.0)
+        independent_score = gcb.get("independent_score")
+        if independent_score is None:
+            independent_score = round(similarity * 100, 1)
+
+        rows.append({
+            "stack": display,
+            "independent_score": round(float(independent_score), 1),
+            "similarity": round(float(similarity), 4),
+            "evidence_strength": gcb.get("evidence_strength", "none"),
+            "best_file": gcb.get("best_file"),
+            "matched_files": gcb.get("matched_files", [])
+        })
+
+    rows.sort(key=lambda x: x["independent_score"], reverse=True)
+    return rows
 
 
 # =============================================================================
@@ -1016,6 +1050,74 @@ def sample_code_files(repo_path, max_files=5, max_chars=2000):
     return candidates[:max_files]
 
 
+def _stack_file_hints(stack_name):
+    """Return file extension and path hints for stack-specific sampling."""
+    stack = RESUME_ALIASES.get(stack_name.lower(), stack_name.lower())
+
+    hints = {
+        "python": {
+            "extensions": {".py"},
+            "path_keywords": ["python", "backend", "api", "service", "model"]
+        },
+        "javascript": {
+            "extensions": {".js", ".jsx", ".mjs", ".cjs"},
+            "path_keywords": ["frontend", "client", "component", "ui", "web"]
+        },
+        "typescript": {
+            "extensions": {".ts", ".tsx"},
+            "path_keywords": ["frontend", "client", "component", "ui", "web"]
+        },
+        "react": {
+            "extensions": {".jsx", ".tsx", ".js", ".ts"},
+            "path_keywords": ["component", "components", "hooks", "pages", "react"]
+        },
+        "go": {
+            "extensions": {".go"},
+            "path_keywords": ["go", "golang"]
+        },
+        "java": {
+            "extensions": {".java"},
+            "path_keywords": ["java", "spring", "src/main"]
+        },
+        "sql": {
+            "extensions": {".sql"},
+            "path_keywords": ["sql", "migration", "query", "db", "database"]
+        },
+        "docker": {
+            "extensions": {".dockerfile"},
+            "path_keywords": ["docker", "container"]
+        },
+        "node.js": {
+            "extensions": {".js", ".ts", ".mjs", ".cjs"},
+            "path_keywords": ["server", "backend", "api", "routes", "express", "node"]
+        }
+    }
+
+    return hints.get(stack, {
+        "extensions": set(),
+        "path_keywords": [stack]
+    })
+
+
+def _filter_samples_for_stack(code_samples, stack_name):
+    """Filter representative samples to files likely belonging to a specific stack."""
+    hints = _stack_file_hints(stack_name)
+    extensions = hints.get("extensions", set())
+    keywords = hints.get("path_keywords", [])
+
+    selected = []
+    for sample in code_samples:
+        path = sample.get("path", "").lower()
+        ext = os.path.splitext(path)[1].lower()
+        path_hit = any(keyword in path for keyword in keywords)
+        ext_hit = ext in extensions if extensions else False
+
+        if ext_hit or path_hit:
+            selected.append(sample)
+
+    return selected
+
+
 def compute_graphcodebert_scores(repo_path, claimed_stacks, policy):
     """Compute GraphCodeBERT similarity scores for claimed stacks."""
     gcb_policy = policy.get("graphcodebert", {})
@@ -1025,19 +1127,51 @@ def compute_graphcodebert_scores(repo_path, claimed_stacks, policy):
     max_files = gcb_policy.get("max_files", 5)
     max_chars = gcb_policy.get("max_chars_per_file", 2000)
 
-    samples = sample_code_files(repo_path, max_files=max_files, max_chars=max_chars)
+    # Build a broader candidate pool first, then filter per stack.
+    candidate_pool_size = max(max_files * 8, 40)
+    samples = sample_code_files(repo_path, max_files=candidate_pool_size, max_chars=max_chars)
     if not samples:
         return {}, "No suitable code samples for GraphCodeBERT"
 
-    stack_queries = build_stack_queries(claimed_stacks)
-    if not stack_queries:
+    query_map = build_stack_queries(claimed_stacks)
+    if not query_map:
         return {}, "No stack queries for GraphCodeBERT"
 
     try:
         from graphcodebert_scoring import score_stacks_with_graphcodebert
-        scores, error = score_stacks_with_graphcodebert(samples, stack_queries)
-        if error:
-            return {}, error
+        scores = {}
+
+        for raw in claimed_stacks:
+            stack_key = RESUME_ALIASES.get(raw.lower(), raw.lower())
+            query = query_map.get(stack_key)
+            if not query:
+                continue
+
+            filtered_samples = _filter_samples_for_stack(samples, stack_key)
+            if not filtered_samples:
+                scores[stack_key] = {
+                    "similarity": 0.0,
+                    "best_file": None,
+                    "independent_score": 0.0,
+                    "evidence_strength": "none",
+                    "matched_files": [],
+                    "matched_similarities": []
+                }
+                continue
+
+            stack_scores, error = score_stacks_with_graphcodebert(filtered_samples, {stack_key: query})
+            if error:
+                return {}, error
+
+            scores[stack_key] = stack_scores.get(stack_key, {
+                "similarity": 0.0,
+                "best_file": None,
+                "independent_score": 0.0,
+                "evidence_strength": "none",
+                "matched_files": [],
+                "matched_similarities": []
+            })
+
         return scores, None
     except Exception as exc:
         return {}, f"GraphCodeBERT import failed: {exc}"
@@ -1256,6 +1390,7 @@ def evaluate_repo(repo_url, local_path, github_username, claimed_stacks, policy)
     # GraphCodeBERT scoring + skill assessment
     gcb_scores, gcb_error = compute_graphcodebert_scores(local_path, claimed_stacks, policy)
     skill_assessment = compute_skill_assessment(claimed_stacks, stack_result, gcb_scores, policy)
+    graphcodebert_stack_scores = build_graphcodebert_stack_scores(claimed_stacks, gcb_scores)
 
     evaluation_payload = {
         "evaluation_summary": {
@@ -1285,6 +1420,7 @@ def evaluate_repo(repo_url, local_path, github_username, claimed_stacks, policy)
         "detected_stacks": stacks,
         "graphcodebert": {
             "scores": gcb_scores,
+            "stack_independent_scores": graphcodebert_stack_scores,
             "error": gcb_error,
             "quality_analysis": graphcodebert_quality_details,
             "quality_error": gcb_quality_error
@@ -1298,6 +1434,7 @@ def evaluate_repo(repo_url, local_path, github_username, claimed_stacks, policy)
         "evaluation": evaluation_payload,
         "graphcodebert": {
             "scores": gcb_scores,
+            "stack_independent_scores": graphcodebert_stack_scores,
             "error": gcb_error
         },
         "skill_assessment": skill_assessment
@@ -1386,6 +1523,10 @@ if __name__ == "__main__":
         print(f"Code Quality: {scores['code_quality']}")
         print(f"Project Depth: {scores['project_depth']}")
         print(f"Documentation: {scores['documentation']}")
+        if result["evaluation"]["graphcodebert"].get("stack_independent_scores"):
+            print("GraphCodeBERT Stack Scores:")
+            for row in result["evaluation"]["graphcodebert"]["stack_independent_scores"]:
+                print(f"  - {row['stack']}: {row['independent_score']} ({row['evidence_strength']})")
         print("-" * 40)
         print(f"Final Score: {result['evaluation']['evaluation_summary']['final_score']}")
         print(f"Confidence: {result['evaluation']['evaluation_summary']['confidence']}")

@@ -1,221 +1,288 @@
 {
   "evaluation_summary": {
-    "final_score": 75.2,
-    "confidence": 0.85,
+    "final_score": 43.9,
+    "confidence": 0.9,
     "scores": {
       "stack_accuracy": 85,
-      "commit_quality": 80,
+      "commit_quality": 0,
       "code_quality": 100,
-      "project_depth": 100,
-      "documentation": 30,
+      "project_depth": 40,
+      "documentation": 0,
       "graphcodebert_quality": 0
     }
   },
   "stack_analysis": {
     "claimed": [
-      "JavaScript",
       "Python",
-      "Java",
+      "JavaScript",
       "React",
-      "sese"
+      "Go"
     ],
     "confirmed": [
-      "javascript",
       "python",
-      "react"
+      "react",
+      "javascript"
     ],
     "false_claims": [
-      "java"
+      "go"
     ],
-    "unknown": [
-      "sese"
-    ]
+    "unknown": []
   },
   "repo_evidence": {
     "languages": {
-      "JavaScript": 29183,
-      "Python": 18011,
-      "CSS": 954,
-      "HTML": 304
+      "Markdown": 71464,
+      "JSON": 67618,
+      "Python": 34219,
+      "HTML": 394,
+      "JavaScript": 39527,
+      "CSS": 987
     },
-    "commits": 31,
-    "lines_added": 5338,
-    "lines_deleted": 709,
-    "files_touched": 45,
-    "avg_lines_per_commit": 172.2,
-    "avg_files_per_commit": 1.5,
+    "commits": 0,
+    "lines_added": 0,
+    "lines_deleted": 0,
+    "files_touched": 0,
+    "avg_lines_per_commit": 0,
+    "avg_files_per_commit": 0,
     "modular_structure": true,
     "config_files": true,
     "error_handling": true,
-    "readme_exists": true
+    "readme_exists": false
   },
   "detected_stacks": [
-    "React",
     "Node.js",
+    "React",
     "Python"
   ],
   "graphcodebert": {
     "scores": {
-      "javascript": {
-        "similarity": 0.6476,
-        "best_file": "frontend\\index.html"
-      },
       "python": {
-        "similarity": 0.6413,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+        "similarity": 0.6288,
+        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py",
+        "independent_score": 65.9,
+        "evidence_strength": "moderate",
+        "matched_files": [
+          "frequency_labs\\backend\\scoring\\scoring_logic.py",
+          "frequency_labs\\backend\\api\\routes.py",
+          "frequency_labs\\backend\\scoring\\strategies.py"
+        ],
+        "matched_similarities": [
+          0.6288,
+          0.6088,
+          0.5891
+        ]
       },
-      "java": {
-        "similarity": 0.6399,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+      "javascript": {
+        "similarity": 0.6547,
+        "best_file": "frequency_labs\\frontend\\vite.config.js",
+        "independent_score": 68.6,
+        "evidence_strength": "moderate",
+        "matched_files": [
+          "frequency_labs\\frontend\\vite.config.js",
+          "frequency_labs\\frontend\\index.html",
+          "frequency_labs\\frontend\\src\\main.jsx"
+        ],
+        "matched_similarities": [
+          0.6547,
+          0.6399,
+          0.6386
+        ]
       },
       "react": {
         "similarity": 0.6349,
-        "best_file": "frontend\\src\\main.jsx"
+        "best_file": "frequency_labs\\frontend\\src\\main.jsx",
+        "independent_score": 66.2,
+        "evidence_strength": "moderate",
+        "matched_files": [
+          "frequency_labs\\frontend\\src\\main.jsx",
+          "frequency_labs\\frontend\\vite.config.js",
+          "frequency_labs\\frontend\\src\\components\\rankingcard.jsx"
+        ],
+        "matched_similarities": [
+          0.6349,
+          0.6129,
+          0.5783
+        ]
       },
-      "sese": {
-        "similarity": 0.5953,
-        "best_file": "frontend\\index.html"
+      "go": {
+        "similarity": 0.0,
+        "best_file": null,
+        "independent_score": 0.0,
+        "evidence_strength": "none",
+        "matched_files": [],
+        "matched_similarities": []
       }
     },
+    "stack_independent_scores": [
+      {
+        "stack": "JavaScript",
+        "independent_score": 68.6,
+        "similarity": 0.6547,
+        "evidence_strength": "moderate",
+        "best_file": "frequency_labs\\frontend\\vite.config.js",
+        "matched_files": [
+          "frequency_labs\\frontend\\vite.config.js",
+          "frequency_labs\\frontend\\index.html",
+          "frequency_labs\\frontend\\src\\main.jsx"
+        ]
+      },
+      {
+        "stack": "React",
+        "independent_score": 66.2,
+        "similarity": 0.6349,
+        "evidence_strength": "moderate",
+        "best_file": "frequency_labs\\frontend\\src\\main.jsx",
+        "matched_files": [
+          "frequency_labs\\frontend\\src\\main.jsx",
+          "frequency_labs\\frontend\\vite.config.js",
+          "frequency_labs\\frontend\\src\\components\\rankingcard.jsx"
+        ]
+      },
+      {
+        "stack": "Python",
+        "independent_score": 65.9,
+        "similarity": 0.6288,
+        "evidence_strength": "moderate",
+        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py",
+        "matched_files": [
+          "frequency_labs\\backend\\scoring\\scoring_logic.py",
+          "frequency_labs\\backend\\api\\routes.py",
+          "frequency_labs\\backend\\scoring\\strategies.py"
+        ]
+      },
+      {
+        "stack": "Go",
+        "independent_score": 0.0,
+        "similarity": 0.0,
+        "evidence_strength": "none",
+        "best_file": null,
+        "matched_files": []
+      }
+    ],
     "error": null,
     "quality_analysis": {},
     "quality_error": null
   },
   "skill_assessment": [
     {
-      "stack": "JavaScript",
-      "knows": true,
-      "score": 85.9,
-      "remark": "Strong evidence in code",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6476,
-        "best_file": "frontend\\index.html"
-      }
-    },
-    {
       "stack": "Python",
       "knows": true,
-      "score": 85.7,
-      "remark": "Strong evidence in code",
+      "score": 65.9,
+      "remark": "Moderate evidence; likely proficient",
       "evidence": {
         "confirmed": true,
-        "graphcodebert_similarity": 0.6413,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+        "graphcodebert_similarity": 0.6288,
+        "graphcodebert_independent_score": 65.9,
+        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py"
       }
     },
     {
-      "stack": "Java",
-      "knows": false,
-      "score": 25.6,
-      "remark": "Weak evidence for this claim",
+      "stack": "JavaScript",
+      "knows": true,
+      "score": 68.6,
+      "remark": "Moderate evidence; likely proficient",
       "evidence": {
-        "confirmed": false,
-        "graphcodebert_similarity": 0.6399,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6547,
+        "graphcodebert_independent_score": 68.6,
+        "best_file": "frequency_labs\\frontend\\vite.config.js"
       }
     },
     {
       "stack": "React",
       "knows": true,
-      "score": 85.4,
-      "remark": "Strong evidence in code",
+      "score": 66.2,
+      "remark": "Moderate evidence; likely proficient",
       "evidence": {
         "confirmed": true,
         "graphcodebert_similarity": 0.6349,
-        "best_file": "frontend\\src\\main.jsx"
+        "graphcodebert_independent_score": 66.2,
+        "best_file": "frequency_labs\\frontend\\src\\main.jsx"
       }
     },
     {
-      "stack": "sese",
+      "stack": "Go",
       "knows": false,
-      "score": 23.8,
+      "score": 0,
       "remark": "Weak evidence for this claim",
       "evidence": {
         "confirmed": false,
-        "graphcodebert_similarity": 0.5953,
-        "best_file": "frontend\\index.html"
+        "graphcodebert_similarity": 0.0,
+        "graphcodebert_independent_score": 0.0,
+        "best_file": null
       }
     }
   ],
   "multi_repo_summary": [
     {
-      "repo_url": "https://github.com/joeabrahamk/frequency_labs.git",
-      "local_path": "./temp_repo\\frequency_labs",
-      "final_score": 75.2,
-      "confidence": 0.85,
+      "repo_url": null,
+      "local_path": "./temp_repo",
+      "final_score": 43.9,
+      "confidence": 0.9,
       "scores": {
         "stack_accuracy": 85,
-        "commit_quality": 80,
+        "commit_quality": 0,
         "code_quality": 100,
-        "project_depth": 100,
-        "documentation": 30,
+        "project_depth": 40,
+        "documentation": 0,
         "graphcodebert_quality": 0
       },
       "confirmed_stacks": [
-        "javascript",
         "python",
-        "react"
+        "react",
+        "javascript"
       ],
       "false_claims": [
-        "java"
+        "go"
       ]
     }
   ],
   "combined_skill_assessment": [
     {
-      "stack": "JavaScript",
-      "knows": true,
-      "score": 85.9,
-      "remark": "Strong evidence in code",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6476,
-        "best_file": "frontend\\index.html"
-      }
-    },
-    {
       "stack": "Python",
       "knows": true,
-      "score": 85.7,
-      "remark": "Strong evidence in code",
+      "score": 65.9,
+      "remark": "Moderate evidence; likely proficient",
       "evidence": {
         "confirmed": true,
-        "graphcodebert_similarity": 0.6413,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+        "graphcodebert_similarity": 0.6288,
+        "graphcodebert_independent_score": 65.9,
+        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py"
       }
     },
     {
-      "stack": "Java",
-      "knows": false,
-      "score": 25.6,
-      "remark": "Weak evidence for this claim",
+      "stack": "JavaScript",
+      "knows": true,
+      "score": 68.6,
+      "remark": "Moderate evidence; likely proficient",
       "evidence": {
-        "confirmed": false,
-        "graphcodebert_similarity": 0.6399,
-        "best_file": "frontend\\src\\components\\rankingcard.jsx"
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6547,
+        "graphcodebert_independent_score": 68.6,
+        "best_file": "frequency_labs\\frontend\\vite.config.js"
       }
     },
     {
       "stack": "React",
       "knows": true,
-      "score": 85.4,
-      "remark": "Strong evidence in code",
+      "score": 66.2,
+      "remark": "Moderate evidence; likely proficient",
       "evidence": {
         "confirmed": true,
         "graphcodebert_similarity": 0.6349,
-        "best_file": "frontend\\src\\main.jsx"
+        "graphcodebert_independent_score": 66.2,
+        "best_file": "frequency_labs\\frontend\\src\\main.jsx"
       }
     },
     {
-      "stack": "sese",
+      "stack": "Go",
       "knows": false,
-      "score": 23.8,
+      "score": 0,
       "remark": "Weak evidence for this claim",
       "evidence": {
         "confirmed": false,
-        "graphcodebert_similarity": 0.5953,
-        "best_file": "frontend\\index.html"
+        "graphcodebert_similarity": 0.0,
+        "graphcodebert_independent_score": 0.0,
+        "best_file": null
       }
     }
   ],
