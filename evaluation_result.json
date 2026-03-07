@@ -1,156 +1,143 @@
 {
   "evaluation_summary": {
-    "final_score": 43.9,
-    "confidence": 0.9,
+    "final_score": 75.2,
+    "confidence": 0.75,
     "scores": {
       "stack_accuracy": 85,
-      "commit_quality": 0,
+      "commit_quality": 80,
       "code_quality": 100,
-      "project_depth": 40,
-      "documentation": 0,
+      "project_depth": 100,
+      "documentation": 30,
       "graphcodebert_quality": 0
     }
   },
   "stack_analysis": {
     "claimed": [
-      "Python",
+      "angular",
       "JavaScript",
-      "React",
-      "Go"
+      "Python",
+      "React"
     ],
     "confirmed": [
-      "python",
       "react",
       "javascript"
     ],
     "false_claims": [
-      "go"
+      "python"
     ],
-    "unknown": []
+    "unknown": [
+      "angular"
+    ]
   },
   "repo_evidence": {
     "languages": {
-      "Markdown": 71464,
-      "JSON": 67618,
-      "Python": 34219,
-      "HTML": 394,
-      "JavaScript": 39527,
-      "CSS": 987
+      "HTML": 1606,
+      "JSON": 137606,
+      "JavaScript": 254357,
+      "Markdown": 36,
+      "CSS": 2120
     },
-    "commits": 0,
-    "lines_added": 0,
-    "lines_deleted": 0,
-    "files_touched": 0,
-    "avg_lines_per_commit": 0,
-    "avg_files_per_commit": 0,
+    "commits": 44,
+    "lines_added": 11041,
+    "lines_deleted": 1291,
+    "files_touched": 58,
+    "avg_lines_per_commit": 250.9,
+    "avg_files_per_commit": 1.3,
     "modular_structure": true,
     "config_files": true,
     "error_handling": true,
-    "readme_exists": false
+    "readme_exists": true
   },
   "detected_stacks": [
     "Node.js",
-    "React",
-    "Python"
+    "React"
   ],
   "graphcodebert": {
     "scores": {
-      "python": {
-        "similarity": 0.6288,
-        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py",
-        "independent_score": 65.9,
-        "evidence_strength": "moderate",
-        "matched_files": [
-          "frequency_labs\\backend\\scoring\\scoring_logic.py",
-          "frequency_labs\\backend\\api\\routes.py",
-          "frequency_labs\\backend\\scoring\\strategies.py"
-        ],
-        "matched_similarities": [
-          0.6288,
-          0.6088,
-          0.5891
-        ]
-      },
-      "javascript": {
-        "similarity": 0.6547,
-        "best_file": "frequency_labs\\frontend\\vite.config.js",
-        "independent_score": 68.6,
-        "evidence_strength": "moderate",
-        "matched_files": [
-          "frequency_labs\\frontend\\vite.config.js",
-          "frequency_labs\\frontend\\index.html",
-          "frequency_labs\\frontend\\src\\main.jsx"
-        ],
-        "matched_similarities": [
-          0.6547,
-          0.6399,
-          0.6386
-        ]
-      },
-      "react": {
-        "similarity": 0.6349,
-        "best_file": "frequency_labs\\frontend\\src\\main.jsx",
-        "independent_score": 66.2,
-        "evidence_strength": "moderate",
-        "matched_files": [
-          "frequency_labs\\frontend\\src\\main.jsx",
-          "frequency_labs\\frontend\\vite.config.js",
-          "frequency_labs\\frontend\\src\\components\\rankingcard.jsx"
-        ],
-        "matched_similarities": [
-          0.6349,
-          0.6129,
-          0.5783
-        ]
-      },
-      "go": {
+      "angular": {
         "similarity": 0.0,
         "best_file": null,
         "independent_score": 0.0,
         "evidence_strength": "none",
         "matched_files": [],
         "matched_similarities": []
+      },
+      "javascript": {
+        "similarity": 0.6618,
+        "best_file": "src\\config\\firebase.js",
+        "independent_score": 69.0,
+        "evidence_strength": "moderate",
+        "matched_files": [
+          "src\\config\\firebase.js",
+          "vite.config.js",
+          "src\\index.jsx"
+        ],
+        "matched_similarities": [
+          0.6618,
+          0.6395,
+          0.6389
+        ]
+      },
+      "python": {
+        "similarity": 0.0,
+        "best_file": null,
+        "independent_score": 0.0,
+        "evidence_strength": "none",
+        "matched_files": [],
+        "matched_similarities": []
+      },
+      "react": {
+        "similarity": 0.6344,
+        "best_file": "src\\index.jsx",
+        "independent_score": 66.5,
+        "evidence_strength": "moderate",
+        "matched_files": [
+          "src\\index.jsx",
+          "src\\config\\firebase.js",
+          "vite.config.js"
+        ],
+        "matched_similarities": [
+          0.6344,
+          0.6152,
+          0.6038
+        ]
       }
     },
     "stack_independent_scores": [
       {
         "stack": "JavaScript",
-        "independent_score": 68.6,
-        "similarity": 0.6547,
+        "independent_score": 69.0,
+        "similarity": 0.6618,
         "evidence_strength": "moderate",
-        "best_file": "frequency_labs\\frontend\\vite.config.js",
+        "best_file": "src\\config\\firebase.js",
         "matched_files": [
-          "frequency_labs\\frontend\\vite.config.js",
-          "frequency_labs\\frontend\\index.html",
-          "frequency_labs\\frontend\\src\\main.jsx"
+          "src\\config\\firebase.js",
+          "vite.config.js",
+          "src\\index.jsx"
         ]
       },
       {
         "stack": "React",
-        "independent_score": 66.2,
-        "similarity": 0.6349,
+        "independent_score": 66.5,
+        "similarity": 0.6344,
         "evidence_strength": "moderate",
-        "best_file": "frequency_labs\\frontend\\src\\main.jsx",
+        "best_file": "src\\index.jsx",
         "matched_files": [
-          "frequency_labs\\frontend\\src\\main.jsx",
-          "frequency_labs\\frontend\\vite.config.js",
-          "frequency_labs\\frontend\\src\\components\\rankingcard.jsx"
+          "src\\index.jsx",
+          "src\\config\\firebase.js",
+          "vite.config.js"
         ]
+      },
+      {
+        "stack": "angular",
+        "independent_score": 0.0,
+        "similarity": 0.0,
+        "evidence_strength": "none",
+        "best_file": null,
+        "matched_files": []
       },
       {
         "stack": "Python",
-        "independent_score": 65.9,
-        "similarity": 0.6288,
-        "evidence_strength": "moderate",
-        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py",
-        "matched_files": [
-          "frequency_labs\\backend\\scoring\\scoring_logic.py",
-          "frequency_labs\\backend\\api\\routes.py",
-          "frequency_labs\\backend\\scoring\\strategies.py"
-        ]
-      },
-      {
-        "stack": "Go",
         "independent_score": 0.0,
         "similarity": 0.0,
         "evidence_strength": "none",
@@ -164,43 +151,7 @@
   },
   "skill_assessment": [
     {
-      "stack": "Python",
-      "knows": true,
-      "score": 65.9,
-      "remark": "Moderate evidence; likely proficient",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6288,
-        "graphcodebert_independent_score": 65.9,
-        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py"
-      }
-    },
-    {
-      "stack": "JavaScript",
-      "knows": true,
-      "score": 68.6,
-      "remark": "Moderate evidence; likely proficient",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6547,
-        "graphcodebert_independent_score": 68.6,
-        "best_file": "frequency_labs\\frontend\\vite.config.js"
-      }
-    },
-    {
-      "stack": "React",
-      "knows": true,
-      "score": 66.2,
-      "remark": "Moderate evidence; likely proficient",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6349,
-        "graphcodebert_independent_score": 66.2,
-        "best_file": "frequency_labs\\frontend\\src\\main.jsx"
-      }
-    },
-    {
-      "stack": "Go",
+      "stack": "angular",
       "knows": false,
       "score": 0,
       "remark": "Weak evidence for this claim",
@@ -209,72 +160,92 @@
         "graphcodebert_similarity": 0.0,
         "graphcodebert_independent_score": 0.0,
         "best_file": null
+      }
+    },
+    {
+      "stack": "JavaScript",
+      "knows": true,
+      "score": 69.0,
+      "remark": "Moderate evidence; likely proficient",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6618,
+        "graphcodebert_independent_score": 69.0,
+        "best_file": "src\\config\\firebase.js"
+      }
+    },
+    {
+      "stack": "Python",
+      "knows": false,
+      "score": 0,
+      "remark": "Weak evidence for this claim",
+      "evidence": {
+        "confirmed": false,
+        "graphcodebert_similarity": 0.0,
+        "graphcodebert_independent_score": 0.0,
+        "best_file": null
+      }
+    },
+    {
+      "stack": "React",
+      "knows": true,
+      "score": 66.5,
+      "remark": "Moderate evidence; likely proficient",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6344,
+        "graphcodebert_independent_score": 66.5,
+        "best_file": "src\\index.jsx"
       }
     }
   ],
   "multi_repo_summary": [
     {
-      "repo_url": null,
-      "local_path": "./temp_repo",
-      "final_score": 43.9,
-      "confidence": 0.9,
+      "repo_url": "https://github.com/joeabrahamk/soft-stitches.git",
+      "local_path": "./temp_repo\\soft-stitches",
+      "final_score": 75.2,
+      "confidence": 0.75,
       "scores": {
         "stack_accuracy": 85,
-        "commit_quality": 0,
+        "commit_quality": 80,
         "code_quality": 100,
-        "project_depth": 40,
-        "documentation": 0,
+        "project_depth": 100,
+        "documentation": 30,
         "graphcodebert_quality": 0
       },
       "confirmed_stacks": [
-        "python",
         "react",
         "javascript"
       ],
       "false_claims": [
-        "go"
+        "python"
+      ]
+    },
+    {
+      "repo_url": "https://github.com/joeabrahamk/angular_test.git",
+      "local_path": "./temp_repo\\angular_tes",
+      "final_score": 73.15,
+      "confidence": 0.75,
+      "scores": {
+        "stack_accuracy": 85,
+        "commit_quality": 60,
+        "code_quality": 100,
+        "project_depth": 100,
+        "documentation": 65,
+        "graphcodebert_quality": 0
+      },
+      "confirmed_stacks": [
+        "react",
+        "javascript"
+      ],
+      "false_claims": [
+        "python"
       ]
     }
   ],
   "combined_skill_assessment": [
     {
-      "stack": "Python",
-      "knows": true,
-      "score": 65.9,
-      "remark": "Moderate evidence; likely proficient",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6288,
-        "graphcodebert_independent_score": 65.9,
-        "best_file": "frequency_labs\\backend\\scoring\\scoring_logic.py"
-      }
-    },
-    {
-      "stack": "JavaScript",
-      "knows": true,
-      "score": 68.6,
-      "remark": "Moderate evidence; likely proficient",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6547,
-        "graphcodebert_independent_score": 68.6,
-        "best_file": "frequency_labs\\frontend\\vite.config.js"
-      }
-    },
-    {
-      "stack": "React",
-      "knows": true,
-      "score": 66.2,
-      "remark": "Moderate evidence; likely proficient",
-      "evidence": {
-        "confirmed": true,
-        "graphcodebert_similarity": 0.6349,
-        "graphcodebert_independent_score": 66.2,
-        "best_file": "frequency_labs\\frontend\\src\\main.jsx"
-      }
-    },
-    {
-      "stack": "Go",
+      "stack": "angular",
       "knows": false,
       "score": 0,
       "remark": "Weak evidence for this claim",
@@ -283,6 +254,42 @@
         "graphcodebert_similarity": 0.0,
         "graphcodebert_independent_score": 0.0,
         "best_file": null
+      }
+    },
+    {
+      "stack": "JavaScript",
+      "knows": true,
+      "score": 69.0,
+      "remark": "Moderate evidence; likely proficient",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6618,
+        "graphcodebert_independent_score": 69.0,
+        "best_file": "src\\config\\firebase.js"
+      }
+    },
+    {
+      "stack": "Python",
+      "knows": true,
+      "score": 64.5,
+      "remark": "Moderate evidence; likely proficient",
+      "evidence": {
+        "confirmed": false,
+        "graphcodebert_similarity": 0.6086,
+        "graphcodebert_independent_score": 64.5,
+        "best_file": "backend\\db.js"
+      }
+    },
+    {
+      "stack": "React",
+      "knows": true,
+      "score": 69.1,
+      "remark": "Moderate evidence; likely proficient",
+      "evidence": {
+        "confirmed": true,
+        "graphcodebert_similarity": 0.6583,
+        "graphcodebert_independent_score": 69.1,
+        "best_file": "src\\app\\app.config.server.ts"
       }
     }
   ],

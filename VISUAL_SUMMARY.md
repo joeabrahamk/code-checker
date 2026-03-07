@@ -1,4 +1,4 @@
-# GraphCodeBERT Integration - Visual Summary
+# GraphCodeBERT Integration - Visual Summary (Updated Mar 2026)
 
 ## The Problem You Had
 
@@ -38,14 +38,44 @@ measure else wise"
                     └───────────────┬───────────────┘
                                     ↓
                     ┌─────────────────────────────────────┐
-                    │      Quality Score (0-100)         │
-                    │    Code Health Assessment          │
-                    │   (Excellent/Good/Acceptable/..)   │
+                    │      Quality Score (0-100)          │
+                    │    Code Health Assessment           │
+                    │   (Excellent/Good/Acceptable/..)    │
                     └─────────────────────────────────────┘
                                     ↓
                     ┌─────────────────────────────────────┐
                     │  Contributes 10% to Final Score     │
                     └─────────────────────────────────────┘
+```
+
+---
+
+## New in This Update
+
+```
+                  ┌──────────────────────────────────────────────┐
+                  │ Independent Stack Scoring (GraphCodeBERT)    │
+                  │   Python / JS / React / Go ...               │
+                  └──────────────────────────────────────────────┘
+                                   │
+     ┌─────────────────────────────┼─────────────────────────────┐
+     ↓                             ↓                             ↓
+stack-specific file          per-stack similarity         independent_score
+    filtering                  + top matches                 (0-100)
+     │                             │                             │
+     └──────────────→ stored in evaluation_result.json ←─────────┘
+
+
+                  ┌──────────────────────────────────────────────┐
+                  │ AI Audit Output Normalization                │
+                  │ Guarantees required fields in final JSON     │
+                  └──────────────────────────────────────────────┘
+                                   │
+                  ┌────────────────┴────────────────┐
+                  ↓                                 ↓
+      score_summary always present      per-stack score / gaps /
+      (final score + confidence +       recommendations always present
+      independent stack scores)
 ```
 
 ---
@@ -249,6 +279,9 @@ All scores combined → Final Score (0-100)
          evaluation_result.json
                   ↓
          AI Audit Review
+                  ↓
+   Deterministic audit normalization
+ (ensures score fields + non-empty gaps/recommendations)
 ```
 
 ---
@@ -262,7 +295,7 @@ All scores combined → Final Score (0-100)
 │                                             │
 │ Enabled: true                               │
 │ ├─ Sample up to: 10 files                   │
-│ ├─ Anti-pattern penalty: 5 points each     │
+│ ├─ Anti-pattern penalty: 5 points each      │
 │ └─ Quality thresholds:                      │
 │    ├─ Excellent: ≥80                        │
 │    ├─ Good: ≥70                             │
@@ -281,21 +314,25 @@ All scores combined → Final Score (0-100)
 
 ```
 Project Root
-├── graphcodebert_quality_scorer.py    ✨ NEW (401 lines)
-├── analyze_repo.py                    🔄 UPDATED (+30 lines)
-├── scoring_policy.json                🔄 UPDATED (+30 lines)
-├── audit_prompt.txt                   🔄 UPDATED (+15 lines)
-├── score_logic.md                     🔄 UPDATED (+150 lines)
-├── GRAPHCODEBERT_QUALITY_GUIDE.md     ✨ NEW (300+ lines)
-├── GRAPHCODEBERT_QUALITY_IMPLEMENTATION.md ✨ NEW (400+ lines)
-├── GRAPHCODEBERT_QUICK_REFERENCE.md   ✨ NEW (200+ lines)
-├── GRAPHCODEBERT_INTEGRATION_COMPLETE.md   ✨ NEW (250+ lines)
-├── DEPLOYMENT_SUMMARY.md              ✨ NEW (300+ lines)
-├── PROJECT_INDEX.md                   ✨ NEW (400+ lines)
-├── IMPLEMENTATION_SUMMARY.md          ✨ NEW (350+ lines)
-└── FINAL_VERIFICATION.md              ✨ NEW (250+ lines)
+├── graphcodebert_scoring.py           🔄 UPDATED
+│   └─ independent per-stack score + evidence bands + top matches
+├── analyze_repo.py                    🔄 UPDATED
+│   ├─ stack-specific sample filtering
+│   ├─ graphcodebert.stack_independent_scores output
+│   └─ skill scoring can run in independent-only mode
+├── scoring_policy.json                🔄 UPDATED
+│   └─ graphcodebert.skill_score.independent_only = true
+├── ai_audit.py                        🔄 UPDATED
+│   └─ deterministic audit normalization (schema guarantees)
+├── audit_prompt.txt                   🔄 UPDATED
+│   └─ explicit score + gap/recommendation requirements
+└── evaluation_result.json             🔄 OUTPUT UPDATED
+  └─ includes per-stack independent GraphCodeBERT scores
 
-Total: 12 files changed, 1,600+ lines added
+Reference docs in repo:
+- GRAPHCODEBERT_GUIDE.md
+- GRAPHCODEBERT_QUALITY_GUIDE.md
+- QUICK_GUIDE.md
 ```
 
 ---
@@ -303,27 +340,19 @@ Total: 12 files changed, 1,600+ lines added
 ## Performance Profile
 
 ```
-┌──────────────────────────────────────┐
-│  Time Per Repository Analysis        │
-├──────────────────────────────────────┤
-│                                      │
-│ Clone repo:              5-30s       │
-│ Detect stacks:           <100ms      │
-│ Analyze commits:         <500ms      │
-│ Sample code files:       <20ms       │
-│ Quality analysis:        <50ms ✨    │
-│ Other scoring:           <200ms      │
-│ Generate output:         <50ms       │
-│                          ──────      │
-│ Total:                   10-35s      │
-│                                      │
-│ GraphCodeBERT adds: <50ms (negligible)
-│ Overhead: <0.2% of total time        │
-│                                      │
-│ No external models required          │
-│ No network calls needed              │
-│ Deterministic output                 │
-└──────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Time Per Repository Analysis (Current)                    │
+├─────────────────────────────────────────────────────────────┤
+│ Clone / local scan:                           dominant      │
+│ GraphCodeBERT embedding + similarity:         variable      │
+│ (depends on model cache, machine, and sample count)         │
+│                                                             │
+│ First run can be slower due to model download/cache warmup.│
+│ Subsequent runs are typically faster with local cache.     │
+│                                                             │
+│ Dependencies: transformers + torch                          │
+│ Deterministic scoring logic over extracted similarities     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -342,11 +371,13 @@ Score structure management            ✅         Structure metric (30%)
 Score overall coding merits           ✅         Combined 0-100 score
 Measure what can't be measured        ✅         Semantic analysis
   otherwise
-Cannot be rule-based                  ✅         Heuristic-based
+Per-stack independent score           ✅         Stack-specific GraphCodeBERT
+Audit score visibility                ✅         score_summary + per-stack score
+Gaps/recommendations always present   ✅         deterministic normalization
 Config & tuning options               ✅         Full configuration
-Deterministic/reproducible            ✅         Pattern-based
+Deterministic/reproducible            ✅         Normalized output contract
 Production ready                      ✅         Fully tested
-Comprehensive documentation           ✅         1,600+ lines
+Comprehensive documentation           ✅         Updated guides included
 ```
 
 ---
@@ -385,14 +416,15 @@ cd "c:\Users\joeab\OneDrive\Desktop\projects\res_main"
 python analyze_repo.py
 # Enter repo URL, username, claimed stacks
 
-# 3. Check output
-# Look for: "GraphCodeBERT Quality Score: XX.X"
+# 3. Review output JSON
+# - graphcodebert.stack_independent_scores
+# - skill_assessment[*].score
 
-# 4. Review results
-cat evaluation_result.json | grep -A 20 "quality_analysis"
-
-# 5. Run AI audit (optional)
+# 4. Run AI audit (normalized output)
 python ai_audit.py
+
+# 5. (Windows) quick inspect in terminal
+Get-Content evaluation_result.json
 ```
 
 ---
@@ -400,16 +432,15 @@ python ai_audit.py
 ## Where to Go Next
 
 ```
-Quick Reference?     → GRAPHCODEBERT_QUICK_REFERENCE.md
-Full Guide?          → GRAPHCODEBERT_QUALITY_GUIDE.md
-Technical Details?   → GRAPHCODEBERT_QUALITY_IMPLEMENTATION.md
-Scoring Logic?       → score_logic.md (Section 8)
-Project Overview?    → PROJECT_INDEX.md
-Deployment Help?     → DEPLOYMENT_SUMMARY.md
+Quick Reference?     → QUICK_GUIDE.md
+Full Guide?          → GRAPHCODEBERT_GUIDE.md
+Quality Guide?       → GRAPHCODEBERT_QUALITY_GUIDE.md
+Scoring Logic?       → score_logic.md
+System Readme?       → README.md
 ```
 
 ---
 
-**Status: ✅ COMPLETE AND READY FOR PRODUCTION**
+**Status: ✅ UPDATED TO CURRENT IMPLEMENTATION**
 
-All components integrated, tested, and documented. The system now measures code quality merits that cannot be captured by rules alone.
+All components are integrated and aligned with current behavior, including per-stack independent scoring and normalized AI audit JSON output.
